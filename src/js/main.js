@@ -16,8 +16,13 @@ class NotatoApp {
         // Initialize modules
         this.store = new AnnotationStore();
         this.fileManager = new FileManager();
-        this.yoloHandler = new YOLOHandler();
-        this.cocoHandler = new COCOHandler();
+
+        // Format handlers registry
+        this.formatHandlers = new Map([
+            ['yolo', new YOLOHandler()],
+            ['coco', new COCOHandler()]
+        ]);
+        this.currentHandler = this.formatHandlers.get('yolo'); // Default to YOLO
 
         // Get canvas
         const canvas = document.getElementById('mainCanvas');
@@ -26,7 +31,6 @@ class NotatoApp {
         this.uiController = new UIController(this.store, this.imageCanvas);
 
         this.currentImageCache = new Map(); // imageId -> image data URL
-        this.cocoAnnotationFile = 'annotations.json'; // Track which COCO file to save to
 
         this.setupEventListeners();
         this.initialize();
@@ -47,12 +51,14 @@ class NotatoApp {
     setupEventListeners() {
         // Load YOLO button
         document.getElementById('loadYoloBtn').addEventListener('click', () => {
+            this.currentHandler = this.formatHandlers.get('yolo');
             this.store.setFormat('yolo');
             this.handleOpenFolder();
         });
 
         // Load COCO button
         document.getElementById('loadCocoBtn').addEventListener('click', () => {
+            this.currentHandler = this.formatHandlers.get('coco');
             this.store.setFormat('coco');
             this.handleOpenFolder();
         });
@@ -83,8 +89,8 @@ class NotatoApp {
             this.store.clear();
             this.currentImageCache.clear();
             this.imageCanvas.clear();
-            this.cocoHandler.initEmpty();
-            this.yoloHandler.setClasses([]);
+            this.formatHandlers.get('coco').initEmpty();
+            this.formatHandlers.get('yolo').setClasses([]);
             this.fileManager.clear();  // Clear file cache to prevent reading stale files
 
             this.uiController.setStatus('Opening folder...');
@@ -119,16 +125,25 @@ class NotatoApp {
                 this.currentImageCache.set(imageId, imageData.url);
             }
 
-            // Load annotations based on format
-            const format = this.store.getState().format;
-            if (format === 'yolo') {
-                await this.loadYOLOAnnotations();
-            } else {
-                await this.loadCOCOAnnotations();
+            // Load annotations using current handler
+            const images = this.store.getAllImages();
+            const { boxes, classes } = await this.currentHandler.load(
+                this.fileManager,
+                images
+            );
+
+            // Populate store with loaded annotations
+            this.store.setClasses(classes);
+            for (const [imageId, imageBoxes] of boxes.entries()) {
+                imageBoxes.forEach(box => {
+                    this.store.addBox({
+                        ...box,
+                        imageId
+                    });
+                });
             }
 
             // Load first image
-            const images = this.store.getAllImages();
             if (images.length > 0) {
                 this.loadImage(images[0].id);
             }
@@ -143,112 +158,6 @@ class NotatoApp {
         }
     }
 
-    /**
-     * Load YOLO annotations
-     */
-    async loadYOLOAnnotations() {
-        const images = this.store.getAllImages();
-
-        // Try to load classes.txt
-        let classesContent = await this.fileManager.readTextFile('classes.txt');
-        if (!classesContent) {
-            // Try in labels folder
-            classesContent = await this.fileManager.readTextFile('labels/classes.txt');
-        }
-
-        if (classesContent) {
-            const classes = this.yoloHandler.parseClasses(classesContent);
-            this.store.setClasses(classes);
-        } else {
-            // Will infer classes from annotations
-            this.store.setClasses(['object']);
-        }
-
-        // Load annotations for each image
-        for (const image of images) {
-            const labelPath = this.fileManager.getYOLOLabelPath(image.filePath);
-            const content = await this.fileManager.readTextFile(labelPath);
-
-            if (content) {
-                const boxes = this.yoloHandler.parse(content, image.width, image.height);
-
-                boxes.forEach(box => {
-                    this.store.addBox({
-                        ...box,
-                        imageId: image.id
-                    });
-                });
-            }
-        }
-
-        // Infer classes from loaded boxes if needed
-        if (this.store.getClasses().length === 1) {
-            const boxes = Array.from(this.store.getState().boxes.values());
-            const maxClassId = Math.max(0, ...boxes.map(b => b.classId));
-
-            if (maxClassId > 0) {
-                const classes = [];
-                for (let i = 0; i <= maxClassId; i++) {
-                    classes.push(`class_${i}`);
-                }
-                this.store.setClasses(classes);
-            }
-        }
-    }
-
-    /**
-     * Load COCO annotations
-     */
-    async loadCOCOAnnotations() {
-        // Try to find annotations file with various common names
-        const possibleNames = [
-            'annotations.json',
-            '_annotations.coco.json',
-            'instances_default.json',
-            'instances.json'
-        ];
-
-        let content = null;
-        for (const name of possibleNames) {
-            content = await this.fileManager.readTextFile(name);
-            if (content) {
-                console.log(`Found COCO annotations: ${name}`);
-                this.cocoAnnotationFile = name; // Remember which file we loaded
-                break;
-            }
-        }
-
-        if (content) {
-            this.cocoHandler.parse(content);
-
-            // Load categories
-            const categories = this.cocoHandler.getCategories();
-            if (categories.length > 0) {
-                const classNames = categories.map(cat => cat.name);
-                this.store.setClasses(classNames);
-            }
-
-            // Load annotations for each image
-            const images = this.store.getAllImages();
-            for (const image of images) {
-                const boxes = this.cocoHandler.getBoxesForImage(image.fileName);
-
-                boxes.forEach(box => {
-                    this.store.addBox({
-                        ...box,
-                        imageId: image.id
-                    });
-                });
-            }
-        } else {
-            // No annotation file found - initialize empty dataset
-            // Will create _annotations.coco.json on first save
-            console.log('No COCO annotations found. Starting with empty dataset.');
-            this.cocoAnnotationFile = '_annotations.coco.json';
-            this.cocoHandler.initEmpty();
-            this.store.setClasses(['object']);
-        }
-    }
 
     /**
      * Load and display an image
@@ -292,13 +201,15 @@ class NotatoApp {
 
             this.uiController.setStatus('Saving...');
 
-            const format = this.store.getState().format;
+            const boxes = this.store.getBoxesForImage(currentImage.id);
+            const classes = this.store.getClasses();
 
-            if (format === 'yolo') {
-                await this.saveYOLO(currentImage);
-            } else {
-                await this.saveCOCO(currentImage);
-            }
+            await this.currentHandler.save(
+                this.fileManager,
+                currentImage,
+                boxes,
+                classes
+            );
 
             this.store.clearImageModified();
             this.uiController.showToast('success', 'Saved successfully');
@@ -311,60 +222,6 @@ class NotatoApp {
         }
     }
 
-    /**
-     * Save YOLO format
-     */
-    async saveYOLO(image) {
-        const boxes = this.store.getBoxesForImage(image.id);
-        const content = this.yoloHandler.stringify(boxes, image.width, image.height);
-
-        const labelPath = this.fileManager.getYOLOLabelPath(image.filePath);
-        await this.fileManager.writeTextFile(labelPath, content);
-
-        // Save classes.txt if it doesn't exist
-        const classesExist = await this.fileManager.fileExists('classes.txt');
-        if (!classesExist) {
-            const classes = this.store.getClasses();
-            this.yoloHandler.setClasses(classes);
-            const classesContent = this.yoloHandler.stringifyClasses(classes);
-            await this.fileManager.writeTextFile('classes.txt', classesContent);
-        }
-    }
-
-    /**
-     * Save COCO format (only current image)
-     */
-    async saveCOCO(currentImage) {
-        const categories = this.store.getClasses();
-
-        // Set categories (only if not already set)
-        const cocoCategories = categories.map((name, index) => ({
-            id: index + 1,
-            name: name,
-            supercategory: 'none'
-        }));
-        this.cocoHandler.setCategories(cocoCategories);
-
-        // Update only the current image's annotations
-        const boxes = this.store.getBoxesForImage(currentImage.id);
-
-        // Adjust class IDs for COCO (1-indexed)
-        const cocoBoxes = boxes.map(box => ({
-            ...box,
-            classId: box.classId + 1
-        }));
-
-        this.cocoHandler.setBoxesForImage(
-            currentImage.fileName,
-            cocoBoxes,
-            currentImage.width,
-            currentImage.height
-        );
-
-        // Write to the same COCO file that was loaded
-        const content = this.cocoHandler.stringify();
-        await this.fileManager.writeTextFile(this.cocoAnnotationFile, content);
-    }
 }
 
 // Initialize application when DOM is ready

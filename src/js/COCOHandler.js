@@ -3,10 +3,14 @@
  * Handles COCO format parsing and writing
  * Format: Single JSON file with images, annotations, and categories
  * bbox format: [top_left_x, top_left_y, width, height] in pixels
+ * Note: COCO uses 1-indexed category IDs, but internally we use 0-indexed
  */
 
-class COCOHandler {
+import FormatHandler from './FormatHandler.js';
+
+class COCOHandler extends FormatHandler {
     constructor() {
+        super();
         this.data = {
             images: [],
             annotations: [],
@@ -15,6 +19,120 @@ class COCOHandler {
         this.nextImageId = 1;
         this.nextAnnotationId = 1;
         this.imageIdMap = new Map(); // fileName -> imageId
+        this.annotationFile = 'annotations.json'; // Track which file to save to
+    }
+
+    /**
+     * Get format name
+     * @returns {string}
+     */
+    getName() {
+        return 'coco';
+    }
+
+    /**
+     * Load all COCO annotations from folder
+     * @param {FileManager} fileManager
+     * @param {Array} images - Array of image objects
+     * @returns {Promise<Object>} - {boxes: Map<imageId, boxes[]>, classes: string[]}
+     */
+    async load(fileManager, images) {
+        const boxes = new Map();
+
+        // Try to find COCO annotations file with various common names
+        const possibleNames = [
+            'annotations.json',
+            '_annotations.coco.json',
+            'instances_default.json',
+            'instances.json'
+        ];
+
+        let content = null;
+        for (const name of possibleNames) {
+            content = await fileManager.readTextFile(name);
+            if (content) {
+                console.log(`Found COCO annotations: ${name}`);
+                this.annotationFile = name;
+                break;
+            }
+        }
+
+        let classes = ['object'];
+
+        if (content) {
+            this.parse(content);
+
+            // Load categories (classes)
+            const categories = this.getCategories();
+            if (categories.length > 0) {
+                classes = categories.map(cat => cat.name);
+            }
+
+            // Create mapping from COCO category ID to internal class index
+            // COCO category IDs can be non-sequential (e.g., 1, 5, 47)
+            const categoryIdToIndex = new Map();
+            categories.forEach((cat, index) => {
+                categoryIdToIndex.set(cat.id, index);
+            });
+
+            // Load annotations for each image
+            for (const image of images) {
+                const imageBoxes = this.getBoxesForImage(image.fileName);
+
+                // Convert COCO category IDs to internal 0-indexed class IDs
+                const normalizedBoxes = imageBoxes.map(box => {
+                    const classIndex = categoryIdToIndex.get(box.classId);
+                    return {
+                        ...box,
+                        classId: classIndex !== undefined ? classIndex : 0
+                    };
+                });
+
+                boxes.set(image.id, normalizedBoxes);
+            }
+        } else {
+            // No annotation file found - initialize empty dataset
+            console.log('No COCO annotations found. Starting with empty dataset.');
+            this.annotationFile = '_annotations.coco.json';
+            this.initEmpty();
+        }
+
+        return { boxes, classes };
+    }
+
+    /**
+     * Save COCO annotations for current image
+     * @param {FileManager} fileManager
+     * @param {Object} image - Image object
+     * @param {Array} boxes - Box objects with 0-indexed class IDs
+     * @param {Array} classes - Class names
+     * @returns {Promise<void>}
+     */
+    async save(fileManager, image, boxes, classes) {
+        // Set categories
+        const cocoCategories = classes.map((name, index) => ({
+            id: index + 1, // COCO uses 1-indexed category IDs
+            name: name,
+            supercategory: 'none'
+        }));
+        this.setCategories(cocoCategories);
+
+        // Convert 0-indexed to COCO 1-indexed class IDs
+        const cocoBoxes = boxes.map(box => ({
+            ...box,
+            classId: box.classId + 1
+        }));
+
+        this.setBoxesForImage(
+            image.fileName,
+            cocoBoxes,
+            image.width,
+            image.height
+        );
+
+        // Write to the same file that was loaded
+        const content = this.stringify();
+        await fileManager.writeTextFile(this.annotationFile, content);
     }
 
     /**

@@ -194,19 +194,6 @@ class FileManager {
     }
 
     /**
-     * Get YOLO label file path for an image
-     * @param {string} imagePath - Image file path
-     * @returns {string} Label file path
-     */
-    getYOLOLabelPath(imagePath) {
-        const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-        const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-
-        // Label file in same directory as image
-        return `${baseName}.txt`;
-    }
-
-    /**
      * Load image as data URL
      * @param {File} file - Image file
      * @returns {Promise<Object>} Image data with URL and dimensions

@@ -5,9 +5,103 @@
  * All coordinates are normalized (0.0 to 1.0)
  */
 
-class YOLOHandler {
+import FormatHandler from './FormatHandler.js';
+
+class YOLOHandler extends FormatHandler {
     constructor() {
+        super();
         this.classes = [];
+    }
+
+    /**
+     * Get format name
+     * @returns {string}
+     */
+    getName() {
+        return 'yolo';
+    }
+
+    /**
+     * Load all YOLO annotations from folder
+     * @param {FileManager} fileManager
+     * @param {Array} images - Array of image objects
+     * @returns {Promise<Object>} - {boxes: Map<imageId, boxes[]>, classes: string[]}
+     */
+    async load(fileManager, images) {
+        const boxes = new Map();
+
+        // Try to load classes.txt from root or labels folder
+        let classesContent = await fileManager.readTextFile('classes.txt');
+        if (!classesContent) {
+            classesContent = await fileManager.readTextFile('labels/classes.txt');
+        }
+
+        let classes = ['object'];
+        if (classesContent) {
+            classes = this.parseClasses(classesContent);
+        }
+        this.classes = classes;
+
+        // Load annotations for each image
+        for (const image of images) {
+            const labelPath = this.getLabelPath(image.filePath);
+            const content = await fileManager.readTextFile(labelPath);
+
+            if (content) {
+                const imageBoxes = this.parse(content, image.width, image.height);
+                boxes.set(image.id, imageBoxes);
+            }
+        }
+
+        // Infer classes from loaded boxes if classes.txt wasn't found
+        if (classes.length === 1) {
+            const allBoxes = Array.from(boxes.values()).flat();
+            const maxClassId = Math.max(0, ...allBoxes.map(b => b.classId));
+
+            if (maxClassId > 0) {
+                classes = [];
+                for (let i = 0; i <= maxClassId; i++) {
+                    classes.push(`class_${i}`);
+                }
+                this.classes = classes;
+            }
+        }
+
+        return { boxes, classes };
+    }
+
+    /**
+     * Save YOLO annotations for current image
+     * @param {FileManager} fileManager
+     * @param {Object} image - Image object
+     * @param {Array} boxes - Box objects
+     * @param {Array} classes - Class names
+     * @returns {Promise<void>}
+     */
+    async save(fileManager, image, boxes, classes) {
+        // Save label file for this image
+        const content = this.stringify(boxes, image.width, image.height);
+        const labelPath = this.getLabelPath(image.filePath);
+        await fileManager.writeTextFile(labelPath, content);
+
+        // Save classes.txt if it doesn't exist
+        const classesExist = await fileManager.fileExists('classes.txt');
+        if (!classesExist) {
+            this.classes = classes;
+            const classesContent = this.stringifyClasses(classes);
+            await fileManager.writeTextFile('classes.txt', classesContent);
+        }
+    }
+
+    /**
+     * Get label file path for an image
+     * @param {string} imagePath - Image file path (e.g., "image1.jpg")
+     * @returns {string} - Label file path (e.g., "image1.txt")
+     */
+    getLabelPath(imagePath) {
+        const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+        const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+        return `${baseName}.txt`;
     }
 
     /**
