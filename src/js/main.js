@@ -26,6 +26,7 @@ class NotatoApp {
         this.uiController = new UIController(this.store, this.imageCanvas);
 
         this.currentImageCache = new Map(); // imageId -> image data URL
+        this.cocoAnnotationFile = 'annotations.json'; // Track which COCO file to save to
 
         this.setupEventListeners();
         this.initialize();
@@ -85,6 +86,11 @@ class NotatoApp {
                 this.uiController.showToast('warning', 'No images found in folder');
                 return;
             }
+
+            // Clear previous data before loading new folder
+            this.store.clear();
+            this.currentImageCache.clear();
+            this.imageCanvas.clear();
 
             this.uiController.setStatus(`Loading ${files.length} images...`);
             this.uiController.setFolderPath(this.fileManager.getDirectoryName());
@@ -185,10 +191,22 @@ class NotatoApp {
      * Load COCO annotations
      */
     async loadCOCOAnnotations() {
-        // Try to find annotations.json or instances_default.json
-        let content = await this.fileManager.readTextFile('annotations.json');
-        if (!content) {
-            content = await this.fileManager.readTextFile('instances_default.json');
+        // Try to find annotations file with various common names
+        const possibleNames = [
+            'annotations.json',
+            '_annotations.coco.json',
+            'instances_default.json',
+            'instances.json'
+        ];
+
+        let content = null;
+        for (const name of possibleNames) {
+            content = await this.fileManager.readTextFile(name);
+            if (content) {
+                console.log(`Found COCO annotations: ${name}`);
+                this.cocoAnnotationFile = name; // Remember which file we loaded
+                break;
+            }
         }
 
         if (content) {
@@ -330,9 +348,9 @@ class NotatoApp {
             );
         }
 
-        // Write annotations.json
+        // Write to the same COCO file that was loaded
         const content = this.cocoHandler.stringify();
-        await this.fileManager.writeTextFile('annotations.json', content);
+        await this.fileManager.writeTextFile(this.cocoAnnotationFile, content);
 
         // Clear modified flag for all images
         images.forEach(img => {
