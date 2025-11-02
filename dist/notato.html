@@ -85,37 +85,15 @@ body {
     margin-bottom: 8px;
 }
 
-/* Format Selector */
-.format-selector {
+/* Load Buttons */
+.load-buttons {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 12px;
 }
 
-.format-selector label {
+.load-buttons .btn-primary {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border: 2px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.format-selector label:hover {
-    border-color: var(--primary-color);
-    background: #eff6ff;
-}
-
-.format-selector input[type="radio"] {
-    margin-right: 6px;
-}
-
-.format-selector input[type="radio"]:checked + span {
-    font-weight: 600;
-    color: var(--primary-color);
 }
 
 .folder-path {
@@ -698,17 +676,10 @@ body {
             <!-- Format Selection -->
             <div class="format-section">
                 <h2>notato</h2>
-                <div class="format-selector">
-                    <label>
-                        <input type="radio" name="format" value="yolo" checked>
-                        <span>YOLO</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="format" value="coco">
-                        <span>COCO</span>
-                    </label>
+                <div class="load-buttons">
+                    <button id="loadYoloBtn" class="btn-primary">Load YOLO</button>
+                    <button id="loadCocoBtn" class="btn-primary">Load COCO</button>
                 </div>
-                <button id="openFolderBtn" class="btn-primary">Open Folder</button>
                 <div id="folderPath" class="folder-path"></div>
             </div>
 
@@ -1094,7 +1065,7 @@ class COCOHandler {
     setBoxesForImage(fileName, boxes, imageWidth, imageHeight) {
         // Ensure image exists in dataset
         let imageId = this.imageIdMap.get(fileName);
-        if (!imageId) {
+        if (imageId === undefined || imageId === null) {
             imageId = this.addImage(fileName, imageWidth, imageHeight);
         }
 
@@ -1233,12 +1204,13 @@ class AnnotationStore {
             panX: 0,
             panY: 0,
             showBoxes: true,
-            modified: new Set()
+            currentImageModified: false
         };
 
         this.listeners = new Map();
         this.nextBoxId = 1;
         this.nextImageId = 1;
+        this.savedBoxesState = null; // Stores original boxes for current image
     }
 
     /**
@@ -1281,7 +1253,6 @@ class AnnotationStore {
             width: imageData.width,
             height: imageData.height,
             boxes: imageData.boxes || [],
-            modified: false,
             subfolder: imageData.subfolder || ''
         };
 
@@ -1436,9 +1407,20 @@ class AnnotationStore {
      * @param {string} imageId - Image ID
      */
     setCurrentImage(imageId) {
+        // Discard any unsaved changes to the previous image
+        if (this.state.currentImageId && this.state.currentImageModified) {
+            this.discardCurrentImageEdits();
+        }
+
         this.state.currentImageId = imageId;
         this.state.selectedBoxId = null;
+        this.state.currentImageModified = false;
+
+        // Save the current state of boxes for this image
+        this.saveCurrentImageState();
+
         this.notify('currentImage', imageId);
+        this.notify('modified', this.state.currentImageModified);
     }
 
     /**
@@ -1476,29 +1458,25 @@ class AnnotationStore {
     }
 
     /**
-     * Mark image as modified
+     * Mark image as modified (only tracks current image)
      * @param {string} imageId - Image ID
      */
     markImageModified(imageId) {
-        const image = this.state.images.get(imageId);
-        if (image) {
-            image.modified = true;
-            this.state.modified.add(imageId);
-            this.notify('modified', this.state.modified);
+        // Only track modifications for the current image
+        if (imageId === this.state.currentImageId) {
+            this.state.currentImageModified = true;
+            this.notify('modified', this.state.currentImageModified);
         }
     }
 
     /**
-     * Clear modified flag for image
-     * @param {string} imageId - Image ID
+     * Clear modified flag for current image after save
      */
-    clearImageModified(imageId) {
-        const image = this.state.images.get(imageId);
-        if (image) {
-            image.modified = false;
-            this.state.modified.delete(imageId);
-            this.notify('modified', this.state.modified);
-        }
+    clearImageModified() {
+        this.state.currentImageModified = false;
+        // Update saved state to match current state
+        this.saveCurrentImageState();
+        this.notify('modified', this.state.currentImageModified);
     }
 
     /**
@@ -1506,7 +1484,7 @@ class AnnotationStore {
      * @returns {boolean} True if modified
      */
     isCurrentImageModified() {
-        return this.state.modified.has(this.state.currentImageId);
+        return this.state.currentImageModified;
     }
 
     /**
@@ -1546,10 +1524,70 @@ class AnnotationStore {
         this.state.classes = [];
         this.state.currentImageId = null;
         this.state.selectedBoxId = null;
-        this.state.modified.clear();
+        this.state.currentImageModified = false;
+        this.savedBoxesState = null;
         this.nextBoxId = 1;
         this.nextImageId = 1;
         this.notify('clear', null);
+    }
+
+    /**
+     * Save current image state for potential rollback
+     */
+    saveCurrentImageState() {
+        if (!this.state.currentImageId) {
+            this.savedBoxesState = null;
+            return;
+        }
+
+        const image = this.state.images.get(this.state.currentImageId);
+        if (!image) {
+            this.savedBoxesState = null;
+            return;
+        }
+
+        // Deep copy of current boxes for this image
+        this.savedBoxesState = image.boxes.map(boxId => {
+            const box = this.state.boxes.get(boxId);
+            return box ? { ...box } : null;
+        }).filter(box => box !== null);
+    }
+
+    /**
+     * Discard edits to current image and restore saved state
+     */
+    discardCurrentImageEdits() {
+        if (!this.state.currentImageId || !this.savedBoxesState) {
+            return;
+        }
+
+        const image = this.state.images.get(this.state.currentImageId);
+        if (!image) return;
+
+        // Remove all current boxes for this image
+        const currentBoxIds = [...image.boxes];
+        currentBoxIds.forEach(boxId => {
+            this.state.boxes.delete(boxId);
+        });
+
+        // Restore saved boxes
+        image.boxes = [];
+        this.savedBoxesState.forEach(savedBox => {
+            const boxId = `box_${this.nextBoxId++}`;
+            const box = {
+                ...savedBox,
+                id: boxId
+            };
+            this.state.boxes.set(boxId, box);
+            image.boxes.push(boxId);
+        });
+
+        // Clear modified flag
+        this.state.currentImageModified = false;
+
+        // Notify listeners
+        this.notify('boxes', this.state.boxes);
+        this.notify('modified', this.state.currentImageModified);
     }
 
     /**
@@ -2814,8 +2852,8 @@ class UIController {
 
         this.elements = {
             // Format
-            formatRadios: document.querySelectorAll('input[name="format"]'),
-            openFolderBtn: document.getElementById('openFolderBtn'),
+            loadYoloBtn: document.getElementById('loadYoloBtn'),
+            loadCocoBtn: document.getElementById('loadCocoBtn'),
             folderPath: document.getElementById('folderPath'),
 
             // Class management
@@ -2865,13 +2903,6 @@ class UIController {
      * Setup DOM event listeners
      */
     setupEventListeners() {
-        // Format selection
-        this.elements.formatRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                this.store.setFormat(e.target.value);
-            });
-        });
-
         // Class selector
         this.elements.classSelector.addEventListener('change', (e) => {
             this.store.setCurrentClass(parseInt(e.target.value));
@@ -3091,9 +3122,7 @@ class UIController {
 
         const status = document.createElement('div');
         status.className = 'file-status';
-        if (image.modified) {
-            status.classList.add('modified');
-        } else if (image.boxes.length > 0) {
+        if (image.boxes.length > 0) {
             status.classList.add('annotated');
         } else {
             status.classList.add('unannotated');
@@ -3172,8 +3201,10 @@ class UIController {
         const isModified = this.store.isCurrentImageModified();
         if (isModified) {
             this.elements.saveBtn.classList.add('unsaved');
+            this.elements.saveBtn.disabled = false;
         } else {
             this.elements.saveBtn.classList.remove('unsaved');
+            this.elements.saveBtn.disabled = true;
         }
     }
 
@@ -3396,8 +3427,15 @@ class NotatoApp {
      * Setup event listeners
      */
     setupEventListeners() {
-        // Open folder button
-        document.getElementById('openFolderBtn').addEventListener('click', () => {
+        // Load YOLO button
+        document.getElementById('loadYoloBtn').addEventListener('click', () => {
+            this.store.setFormat('yolo');
+            this.handleOpenFolder();
+        });
+
+        // Load COCO button
+        document.getElementById('loadCocoBtn').addEventListener('click', () => {
+            this.store.setFormat('coco');
             this.handleOpenFolder();
         });
 
@@ -3624,6 +3662,11 @@ class NotatoApp {
                 return;
             }
 
+            // Don't save if there are no changes
+            if (!this.store.isCurrentImageModified()) {
+                return;
+            }
+
             this.uiController.setStatus('Saving...');
 
             const format = this.store.getState().format;
@@ -3631,10 +3674,10 @@ class NotatoApp {
             if (format === 'yolo') {
                 await this.saveYOLO(currentImage);
             } else {
-                await this.saveCOCO();
+                await this.saveCOCO(currentImage);
             }
 
-            this.store.clearImageModified(currentImage.id);
+            this.store.clearImageModified();
             this.uiController.showToast('success', 'Saved successfully');
             this.uiController.setStatus('Ready');
 
@@ -3666,14 +3709,12 @@ class NotatoApp {
     }
 
     /**
-     * Save COCO format
+     * Save COCO format (only current image)
      */
-    async saveCOCO() {
-        // Update COCO data with all images and annotations
-        const images = this.store.getAllImages();
+    async saveCOCO(currentImage) {
         const categories = this.store.getClasses();
 
-        // Set categories
+        // Set categories (only if not already set)
         const cocoCategories = categories.map((name, index) => ({
             id: index + 1,
             name: name,
@@ -3681,32 +3722,25 @@ class NotatoApp {
         }));
         this.cocoHandler.setCategories(cocoCategories);
 
-        // Update all images and their annotations
-        for (const image of images) {
-            const boxes = this.store.getBoxesForImage(image.id);
+        // Update only the current image's annotations
+        const boxes = this.store.getBoxesForImage(currentImage.id);
 
-            // Adjust class IDs for COCO (1-indexed)
-            const cocoBoxes = boxes.map(box => ({
-                ...box,
-                classId: box.classId + 1
-            }));
+        // Adjust class IDs for COCO (1-indexed)
+        const cocoBoxes = boxes.map(box => ({
+            ...box,
+            classId: box.classId + 1
+        }));
 
-            this.cocoHandler.setBoxesForImage(
-                image.fileName,
-                cocoBoxes,
-                image.width,
-                image.height
-            );
-        }
+        this.cocoHandler.setBoxesForImage(
+            currentImage.fileName,
+            cocoBoxes,
+            currentImage.width,
+            currentImage.height
+        );
 
         // Write to the same COCO file that was loaded
         const content = this.cocoHandler.stringify();
         await this.fileManager.writeTextFile(this.cocoAnnotationFile, content);
-
-        // Clear modified flag for all images
-        images.forEach(img => {
-            this.store.clearImageModified(img.id);
-        });
     }
 }
 

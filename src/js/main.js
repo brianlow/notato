@@ -45,8 +45,15 @@ class NotatoApp {
      * Setup event listeners
      */
     setupEventListeners() {
-        // Open folder button
-        document.getElementById('openFolderBtn').addEventListener('click', () => {
+        // Load YOLO button
+        document.getElementById('loadYoloBtn').addEventListener('click', () => {
+            this.store.setFormat('yolo');
+            this.handleOpenFolder();
+        });
+
+        // Load COCO button
+        document.getElementById('loadCocoBtn').addEventListener('click', () => {
+            this.store.setFormat('coco');
             this.handleOpenFolder();
         });
 

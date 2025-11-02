@@ -10,8 +10,8 @@ class UIController {
 
         this.elements = {
             // Format
-            formatRadios: document.querySelectorAll('input[name="format"]'),
-            openFolderBtn: document.getElementById('openFolderBtn'),
+            loadYoloBtn: document.getElementById('loadYoloBtn'),
+            loadCocoBtn: document.getElementById('loadCocoBtn'),
             folderPath: document.getElementById('folderPath'),
 
             // Class management
@@ -61,13 +61,6 @@ class UIController {
      * Setup DOM event listeners
      */
     setupEventListeners() {
-        // Format selection
-        this.elements.formatRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                this.store.setFormat(e.target.value);
-            });
-        });
-
         // Class selector
         this.elements.classSelector.addEventListener('change', (e) => {
             this.store.setCurrentClass(parseInt(e.target.value));

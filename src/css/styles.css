@@ -78,37 +78,15 @@ body {
     margin-bottom: 8px;
 }
 
-/* Format Selector */
-.format-selector {
+/* Load Buttons */
+.load-buttons {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 12px;
 }
 
-.format-selector label {
+.load-buttons .btn-primary {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border: 2px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.format-selector label:hover {
-    border-color: var(--primary-color);
-    background: #eff6ff;
-}
-
-.format-selector input[type="radio"] {
-    margin-right: 6px;
-}
-
-.format-selector input[type="radio"]:checked + span {
-    font-weight: 600;
-    color: var(--primary-color);
 }
 
 .folder-path {
