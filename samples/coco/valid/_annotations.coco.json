@@ -1,0 +1,148 @@
+{
+  "info": {
+    "description": "DETR synthetic dataset - valid split",
+    "version": "1.0",
+    "year": 2025
+  },
+  "licenses": [],
+  "images": [
+    {
+      "id": 0,
+      "file_name": "image_000000.jpg",
+      "width": 672,
+      "height": 672
+    },
+    {
+      "id": 1,
+      "file_name": "image_000001.jpg",
+      "width": 672,
+      "height": 672
+    }
+  ],
+  "annotations": [
+    {
+      "id": 0,
+      "image_id": 0,
+      "category_id": 0,
+      "bbox": [
+        122,
+        252,
+        101,
+        101
+      ],
+      "area": 10201,
+      "iscrowd": 0
+    },
+    {
+      "id": 1,
+      "image_id": 0,
+      "category_id": 0,
+      "bbox": [
+        83,
+        429,
+        129,
+        127
+      ],
+      "area": 16383,
+      "iscrowd": 0
+    },
+    {
+      "id": 2,
+      "image_id": 0,
+      "category_id": 0,
+      "bbox": [
+        323,
+        267,
+        116,
+        72
+      ],
+      "area": 8352,
+      "iscrowd": 0
+    },
+    {
+      "id": 3,
+      "image_id": 0,
+      "category_id": 0,
+      "bbox": [
+        244,
+        271,
+        90,
+        79
+      ],
+      "area": 7110,
+      "iscrowd": 0
+    },
+    {
+      "id": 4,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        323,
+        74,
+        108,
+        108
+      ],
+      "area": 11664,
+      "iscrowd": 0
+    },
+    {
+      "id": 5,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        102,
+        75,
+        37,
+        122
+      ],
+      "area": 4514,
+      "iscrowd": 0
+    },
+    {
+      "id": 6,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        135,
+        357,
+        83,
+        56
+      ],
+      "area": 4648,
+      "iscrowd": 0
+    },
+    {
+      "id": 7,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        378,
+        291,
+        81,
+        81
+      ],
+      "area": 6561,
+      "iscrowd": 0
+    },
+    {
+      "id": 8,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        309,
+        541,
+        66,
+        119
+      ],
+      "area": 7854,
+      "iscrowd": 0
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "lego",
+      "supercategory": "part"
+    }
+  ]
+}
