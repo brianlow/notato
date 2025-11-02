@@ -260,6 +260,15 @@ class FileManager {
     }
 
     /**
+     * Clear all cached file handles
+     * Call this when loading a new folder to prevent reading stale files
+     */
+    clear() {
+        this.fileCache.clear();
+        this.directoryHandle = null;
+    }
+
+    /**
      * Handle drag and drop events (fallback for unsupported browsers)
      * @param {DataTransfer} dataTransfer - Drag data transfer object
      * @returns {Promise<Array>} Array of image files
