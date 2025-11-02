@@ -49,18 +49,35 @@ This creates `dist/notato.html` - a single file containing the entire applicatio
 
 ### Testing
 
-Run the test suite (80 tests covering core functionality):
+#### Unit Tests
+
+Run the unit test suite (80 tests covering core functionality):
 
 ```bash
-npm test                 # Run all tests once
+npm test                 # Run all unit tests once
 npm run test:watch       # Run tests in watch mode (re-runs on changes)
 npm run test:ui          # Open Vitest UI in browser
 ```
 
-The test suite includes:
+The unit test suite includes:
 - **YOLOHandler**: Coordinate conversions, parsing, real file integration
 - **COCOHandler**: JSON parsing, box retrieval, category management
 - **AnnotationStore**: State management, CRUD operations, event system
+
+#### End-to-End Tests
+
+Run Playwright E2E tests that verify dataset loading in a real browser:
+
+```bash
+npm run test:e2e         # Run E2E tests (headless)
+npm run test:e2e:headed  # Run E2E tests with visible browser
+npm run test:e2e:ui      # Open Playwright UI for debugging tests
+```
+
+The E2E test suite includes:
+- **YOLO Dataset**: Load samples/yolo folder and verify bounding boxes display
+- **COCO Dataset**: Load samples/coco/train folder and verify annotations display
+- **Navigation**: Verify switching between images with different annotations
 
 ## Supported Formats
 
