@@ -68,15 +68,25 @@ class COCOHandler extends FormatHandler {
                 classes = categories.map(cat => cat.name);
             }
 
+            // Create mapping from COCO category ID to internal class index
+            // COCO category IDs can be non-sequential (e.g., 1, 5, 47)
+            const categoryIdToIndex = new Map();
+            categories.forEach((cat, index) => {
+                categoryIdToIndex.set(cat.id, index);
+            });
+
             // Load annotations for each image
             for (const image of images) {
                 const imageBoxes = this.getBoxesForImage(image.fileName);
 
-                // Convert COCO 1-indexed class IDs to 0-indexed for internal use
-                const normalizedBoxes = imageBoxes.map(box => ({
-                    ...box,
-                    classId: box.classId - 1
-                }));
+                // Convert COCO category IDs to internal 0-indexed class IDs
+                const normalizedBoxes = imageBoxes.map(box => {
+                    const classIndex = categoryIdToIndex.get(box.classId);
+                    return {
+                        ...box,
+                        classId: classIndex !== undefined ? classIndex : 0
+                    };
+                });
 
                 boxes.set(image.id, normalizedBoxes);
             }
