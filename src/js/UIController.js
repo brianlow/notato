@@ -241,6 +241,9 @@ class UIController {
                 group.appendChild(header);
             }
 
+            // Sort images by filename within each subfolder
+            imgs.sort((a, b) => a.fileName.localeCompare(b.fileName));
+
             imgs.forEach(img => {
                 const item = this.createFileItem(img, currentImageId);
                 group.appendChild(item);
