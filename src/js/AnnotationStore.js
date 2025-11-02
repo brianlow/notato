@@ -67,8 +67,7 @@ class AnnotationStore {
             filePath: imageData.filePath,
             width: imageData.width,
             height: imageData.height,
-            boxes: imageData.boxes || [],
-            subfolder: imageData.subfolder || ''
+            boxes: imageData.boxes || []
         };
 
         this.state.images.set(id, image);
