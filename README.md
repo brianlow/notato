@@ -77,13 +77,10 @@ One `.txt` file per image with normalized coordinates:
 
 Example folder structure:
 ```
-/dataset
-  /images
-    image1.jpg
-    image2.jpg
-  /labels
-    image1.txt
-    image2.txt
+image1.jpg
+image1.txt
+image2.jpg
+image2.txt
 ```
 
 ### COCO Format
