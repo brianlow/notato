@@ -1,6 +1,7 @@
 {
   "name": "notato",
   "version": "1.0.0",
+  "type": "module",
   "description": "Lightweight browser-based image annotation tool for YOLO and COCO formats",
   "scripts": {
     "build": "node build.js",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@vitest/ui": "^4.0.6",
+    "http-server": "^14.1.1",
     "live-server": "^1.2.2",
     "vitest": "^4.0.6"
   }
