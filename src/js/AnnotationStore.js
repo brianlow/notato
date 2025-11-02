@@ -19,12 +19,13 @@ class AnnotationStore {
             panX: 0,
             panY: 0,
             showBoxes: true,
-            modified: new Set()
+            currentImageModified: false
         };
 
         this.listeners = new Map();
         this.nextBoxId = 1;
         this.nextImageId = 1;
+        this.savedBoxesState = null; // Stores original boxes for current image
     }
 
     /**
@@ -67,7 +68,6 @@ class AnnotationStore {
             width: imageData.width,
             height: imageData.height,
             boxes: imageData.boxes || [],
-            modified: false,
             subfolder: imageData.subfolder || ''
         };
 
@@ -222,9 +222,20 @@ class AnnotationStore {
      * @param {string} imageId - Image ID
      */
     setCurrentImage(imageId) {
+        // Discard any unsaved changes to the previous image
+        if (this.state.currentImageId && this.state.currentImageModified) {
+            this.discardCurrentImageEdits();
+        }
+
         this.state.currentImageId = imageId;
         this.state.selectedBoxId = null;
+        this.state.currentImageModified = false;
+
+        // Save the current state of boxes for this image
+        this.saveCurrentImageState();
+
         this.notify('currentImage', imageId);
+        this.notify('modified', this.state.currentImageModified);
     }
 
     /**
@@ -262,29 +273,25 @@ class AnnotationStore {
     }
 
     /**
-     * Mark image as modified
+     * Mark image as modified (only tracks current image)
      * @param {string} imageId - Image ID
      */
     markImageModified(imageId) {
-        const image = this.state.images.get(imageId);
-        if (image) {
-            image.modified = true;
-            this.state.modified.add(imageId);
-            this.notify('modified', this.state.modified);
+        // Only track modifications for the current image
+        if (imageId === this.state.currentImageId) {
+            this.state.currentImageModified = true;
+            this.notify('modified', this.state.currentImageModified);
         }
     }
 
     /**
-     * Clear modified flag for image
-     * @param {string} imageId - Image ID
+     * Clear modified flag for current image after save
      */
-    clearImageModified(imageId) {
-        const image = this.state.images.get(imageId);
-        if (image) {
-            image.modified = false;
-            this.state.modified.delete(imageId);
-            this.notify('modified', this.state.modified);
-        }
+    clearImageModified() {
+        this.state.currentImageModified = false;
+        // Update saved state to match current state
+        this.saveCurrentImageState();
+        this.notify('modified', this.state.currentImageModified);
     }
 
     /**
@@ -292,7 +299,7 @@ class AnnotationStore {
      * @returns {boolean} True if modified
      */
     isCurrentImageModified() {
-        return this.state.modified.has(this.state.currentImageId);
+        return this.state.currentImageModified;
     }
 
     /**
@@ -332,10 +339,70 @@ class AnnotationStore {
         this.state.classes = [];
         this.state.currentImageId = null;
         this.state.selectedBoxId = null;
-        this.state.modified.clear();
+        this.state.currentImageModified = false;
+        this.savedBoxesState = null;
         this.nextBoxId = 1;
         this.nextImageId = 1;
         this.notify('clear', null);
+    }
+
+    /**
+     * Save current image state for potential rollback
+     */
+    saveCurrentImageState() {
+        if (!this.state.currentImageId) {
+            this.savedBoxesState = null;
+            return;
+        }
+
+        const image = this.state.images.get(this.state.currentImageId);
+        if (!image) {
+            this.savedBoxesState = null;
+            return;
+        }
+
+        // Deep copy of current boxes for this image
+        this.savedBoxesState = image.boxes.map(boxId => {
+            const box = this.state.boxes.get(boxId);
+            return box ? { ...box } : null;
+        }).filter(box => box !== null);
+    }
+
+    /**
+     * Discard edits to current image and restore saved state
+     */
+    discardCurrentImageEdits() {
+        if (!this.state.currentImageId || !this.savedBoxesState) {
+            return;
+        }
+
+        const image = this.state.images.get(this.state.currentImageId);
+        if (!image) return;
+
+        // Remove all current boxes for this image
+        const currentBoxIds = [...image.boxes];
+        currentBoxIds.forEach(boxId => {
+            this.state.boxes.delete(boxId);
+        });
+
+        // Restore saved boxes
+        image.boxes = [];
+        this.savedBoxesState.forEach(savedBox => {
+            const boxId = `box_${this.nextBoxId++}`;
+            const box = {
+                ...savedBox,
+                id: boxId
+            };
+            this.state.boxes.set(boxId, box);
+            image.boxes.push(boxId);
+        });
+
+        // Clear modified flag
+        this.state.currentImageModified = false;
+
+        // Notify listeners
+        this.notify('boxes', this.state.boxes);
+        this.notify('modified', this.state.currentImageModified);
     }
 
     /**

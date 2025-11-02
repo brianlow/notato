@@ -53,7 +53,6 @@ describe('AnnotationStore', () => {
             expect(image.width).toBe(640);
             expect(image.height).toBe(480);
             expect(image.boxes).toEqual([]);
-            expect(image.modified).toBe(false);
         });
 
         it('should use provided ID if given', () => {
@@ -153,6 +152,9 @@ describe('AnnotationStore', () => {
         });
 
         it('should mark image as modified when adding box', () => {
+            // Set as current image first (required for modification tracking)
+            store.setCurrentImage(imageId);
+
             const boxData = {
                 classId: 0,
                 className: 'person',
@@ -164,10 +166,9 @@ describe('AnnotationStore', () => {
             };
 
             store.addBox(boxData);
-            const image = store.getImage(imageId);
 
-            expect(image.modified).toBe(true);
-            expect(store.getState().modified.has(imageId)).toBe(true);
+            expect(store.isCurrentImageModified()).toBe(true);
+            expect(store.getState().currentImageModified).toBe(true);
         });
 
         it('should update box properties', () => {
@@ -350,23 +351,23 @@ describe('AnnotationStore', () => {
     describe('Modification Tracking', () => {
         it('should track modified images', () => {
             const imageId = store.addImage({ fileName: 'test.jpg', width: 640, height: 480 });
+            store.setCurrentImage(imageId);
 
             store.markImageModified(imageId);
 
-            const image = store.getImage(imageId);
-            expect(image.modified).toBe(true);
-            expect(store.getState().modified.has(imageId)).toBe(true);
+            expect(store.isCurrentImageModified()).toBe(true);
+            expect(store.getState().currentImageModified).toBe(true);
         });
 
         it('should clear modified flag', () => {
             const imageId = store.addImage({ fileName: 'test.jpg', width: 640, height: 480 });
+            store.setCurrentImage(imageId);
             store.markImageModified(imageId);
 
-            store.clearImageModified(imageId);
+            store.clearImageModified();
 
-            const image = store.getImage(imageId);
-            expect(image.modified).toBe(false);
-            expect(store.getState().modified.has(imageId)).toBe(false);
+            expect(store.isCurrentImageModified()).toBe(false);
+            expect(store.getState().currentImageModified).toBe(false);
         });
 
         it('should check if current image is modified', () => {
@@ -426,7 +427,7 @@ describe('AnnotationStore', () => {
             expect(state.classes).toEqual([]);
             expect(state.currentImageId).toBeNull();
             expect(state.selectedBoxId).toBeNull();
-            expect(state.modified.size).toBe(0);
+            expect(state.currentImageModified).toBe(false);
         });
 
         it('should reset ID counters when clearing', () => {
