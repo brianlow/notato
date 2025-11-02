@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>notato Integration Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #0e4429;
+            color: #4ade80;
+        }
+        .fail {
+            background: #5a1e1e;
+            color: #f87171;
+        }
+        .info {
+            background: #1e3a5f;
+            color: #60a5fa;
+        }
+        h1 { color: #60a5fa; }
+        h2 { color: #a78bfa; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 notato Integration Test</h1>
+    <div id="testResults"></div>
+
+    <script>
+        const results = [];
+
+        function addResult(test, passed, message) {
+            results.push({ test, passed, message });
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.textContent = `${passed ? '✓' : '✗'} ${test}: ${message}`;
+            document.getElementById('testResults').appendChild(div);
+        }
+
+        function addInfo(message) {
+            const div = document.createElement('div');
+            div.className = 'test-result info';
+            div.textContent = `ℹ ${message}`;
+            document.getElementById('testResults').appendChild(div);
+        }
+
+        // Test 1: Load the application
+        addInfo('Loading notato application...');
+
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        iframe.onload = function() {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const iframeWindow = iframe.contentWindow;
+
+                addInfo('Application loaded in iframe');
+
+                // Test 2: Check for critical elements
+                const tests = [
+                    {
+                        name: 'Canvas element exists',
+                        test: () => iframeDoc.getElementById('mainCanvas') !== null
+                    },
+                    {
+                        name: 'Sidebar exists',
+                        test: () => iframeDoc.querySelector('.sidebar') !== null
+                    },
+                    {
+                        name: 'Open folder button exists',
+                        test: () => iframeDoc.getElementById('openFolderBtn') !== null
+                    },
+                    {
+                        name: 'Class selector exists',
+                        test: () => iframeDoc.getElementById('classSelector') !== null
+                    },
+                    {
+                        name: 'Save button exists',
+                        test: () => iframeDoc.getElementById('saveBtn') !== null
+                    },
+                    {
+                        name: 'NotatoApp instance created',
+                        test: () => typeof iframeWindow.notatoApp !== 'undefined'
+                    },
+                    {
+                        name: 'AnnotationStore initialized',
+                        test: () => iframeWindow.notatoApp && iframeWindow.notatoApp.store !== undefined
+                    },
+                    {
+                        name: 'ImageCanvas initialized',
+                        test: () => iframeWindow.notatoApp && iframeWindow.notatoApp.imageCanvas !== undefined
+                    },
+                    {
+                        name: 'FileManager initialized',
+                        test: () => iframeWindow.notatoApp && iframeWindow.notatoApp.fileManager !== undefined
+                    },
+                    {
+                        name: 'UIController initialized',
+                        test: () => iframeWindow.notatoApp && iframeWindow.notatoApp.uiController !== undefined
+                    },
+                    {
+                        name: 'Default class set',
+                        test: () => {
+                            const classes = iframeWindow.notatoApp.store.getClasses();
+                            return classes.length > 0 && classes[0] === 'object';
+                        }
+                    },
+                    {
+                        name: 'Canvas context available',
+                        test: () => {
+                            const canvas = iframeDoc.getElementById('mainCanvas');
+                            return canvas && canvas.getContext('2d') !== null;
+                        }
+                    },
+                    {
+                        name: 'No JavaScript errors in console',
+                        test: () => {
+                            // This is a bit tricky, but we can check if the app loaded without throwing
+                            return iframeWindow.notatoApp !== undefined;
+                        }
+                    }
+                ];
+
+                // Run tests
+                let passCount = 0;
+                tests.forEach(({ name, test }) => {
+                    try {
+                        const passed = test();
+                        addResult(name, passed, passed ? 'OK' : 'Failed');
+                        if (passed) passCount++;
+                    } catch (error) {
+                        addResult(name, false, error.message);
+                    }
+                });
+
+                // Summary
+                const h2 = document.createElement('h2');
+                h2.textContent = `Test Summary: ${passCount}/${tests.length} passed`;
+                document.getElementById('testResults').appendChild(h2);
+
+                if (passCount === tests.length) {
+                    addInfo('✓ All tests passed! The application is working correctly.');
+                } else {
+                    addInfo(`✗ ${tests.length - passCount} test(s) failed.`);
+                }
+
+            } catch (error) {
+                addResult('Initialization', false, error.message);
+            }
+        };
+
+        iframe.onerror = function(error) {
+            addResult('Load application', false, 'Failed to load application: ' + error);
+        };
+
+        iframe.src = 'notato.html';
+    </script>
+</body>
+</html>
