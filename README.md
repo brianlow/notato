@@ -47,6 +47,21 @@ npm run build
 
 This creates `dist/notato.html` - a single file containing the entire application.
 
+### Testing
+
+Run the test suite (80 tests covering core functionality):
+
+```bash
+npm test                 # Run all tests once
+npm run test:watch       # Run tests in watch mode (re-runs on changes)
+npm run test:ui          # Open Vitest UI in browser
+```
+
+The test suite includes:
+- **YOLOHandler**: Coordinate conversions, parsing, real file integration
+- **COCOHandler**: JSON parsing, box retrieval, category management
+- **AnnotationStore**: State management, CRUD operations, event system
+
 ## Supported Formats
 
 ### YOLO Format
