@@ -95,7 +95,7 @@ class COCOHandler {
     setBoxesForImage(fileName, boxes, imageWidth, imageHeight) {
         // Ensure image exists in dataset
         let imageId = this.imageIdMap.get(fileName);
-        if (!imageId) {
+        if (imageId === undefined || imageId === null) {
             imageId = this.addImage(fileName, imageWidth, imageHeight);
         }
 
