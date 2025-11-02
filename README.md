@@ -1,3 +1,6 @@
+![alt text](images/header.png "Image of potatoe characters")
+
+
 # notato - Image Annotation Tool
 
 A lightweight, browser-based image annotation tool for creating bounding box annotations in YOLO and COCO formats.
