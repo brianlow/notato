@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>notato - Image Annotation Tool</title>
+    <!-- CSS_PLACEHOLDER -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <!-- Format Selection -->
+            <div class="format-section">
+                <h2>notato</h2>
+                <div class="format-selector">
+                    <label>
+                        <input type="radio" name="format" value="yolo" checked>
+                        <span>YOLO</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="format" value="coco">
+                        <span>COCO</span>
+                    </label>
+                </div>
+                <button id="openFolderBtn" class="btn-primary">Open Folder</button>
+                <div id="folderPath" class="folder-path"></div>
+            </div>
+
+            <!-- Class Management -->
+            <div class="class-section">
+                <h3>Classes</h3>
+                <div class="class-selector-wrapper">
+                    <select id="classSelector" class="class-selector">
+                        <option value="0">Class 0</option>
+                    </select>
+                    <button id="addClassBtn" class="btn-small" title="Add Class">+</button>
+                </div>
+                <div id="classList" class="class-list"></div>
+            </div>
+
+            <!-- File List -->
+            <div class="file-section">
+                <h3>Images</h3>
+                <input type="text" id="fileSearch" class="search-input" placeholder="Search files...">
+                <div id="fileList" class="file-list">
+                    <div class="empty-state">
+                        <p>No folder loaded</p>
+                        <p class="hint">Click "Open Folder" to get started</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Canvas Area -->
+        <main class="main-content">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <span id="fileInfo" class="file-info">No image loaded</span>
+                    <span id="annotationCount" class="annotation-count"></span>
+                </div>
+                <div class="toolbar-right">
+                    <button id="zoomOutBtn" class="btn-icon" title="Zoom Out (-)">−</button>
+                    <span id="zoomLevel" class="zoom-level">100%</span>
+                    <button id="zoomInBtn" class="btn-icon" title="Zoom In (+)">+</button>
+                    <button id="fitToScreenBtn" class="btn-icon" title="Fit to Screen (0)">⊡</button>
+                    <button id="toggleBoxesBtn" class="btn-icon" title="Toggle Boxes (H)">👁</button>
+                    <button id="saveBtn" class="btn-primary" title="Save (Ctrl+S)">Save</button>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="mainCanvas"></canvas>
+                <div class="empty-canvas-state">
+                    <h2>Welcome to notato</h2>
+                    <p>Open a folder to start annotating images</p>
+                    <p class="hint">Supports YOLO and COCO formats</p>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <span id="cursorPos" class="cursor-pos"></span>
+                <span id="statusMessage" class="status-message">Ready</span>
+                <span id="shortcutHint" class="shortcut-hint">
+                    Press ? for keyboard shortcuts
+                </span>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="addClassModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Class</h3>
+            <input type="text" id="newClassName" placeholder="Enter class name" class="modal-input">
+            <div class="modal-buttons">
+                <button id="addClassConfirm" class="btn-primary">Add</button>
+                <button id="addClassCancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shortcutsModal" class="modal">
+        <div class="modal-content">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcuts-list">
+                <div class="shortcut-item">
+                    <kbd>Delete</kbd>
+                    <span>Delete selected box</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Escape</kbd>
+                    <span>Deselect box / cancel drawing</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>← →</kbd>
+                    <span>Navigate between images</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>+ / -</kbd>
+                    <span>Zoom in / out</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>0</kbd>
+                    <span>Fit to screen</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>H</kbd>
+                    <span>Toggle hide/show boxes</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl+S</kbd>
+                    <span>Save annotations</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Space + Drag</kbd>
+                    <span>Pan canvas</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>?</kbd>
+                    <span>Show this help</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="shortcutsClose" class="btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JS_PLACEHOLDER -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
