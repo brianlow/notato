@@ -997,12 +997,6 @@ class YOLOHandler {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = YOLOHandler;
-}
-
-
 /**
  * COCOHandler.js
  * Handles COCO format parsing and writing
@@ -1217,12 +1211,6 @@ class COCOHandler {
         return this.data;
     }
 }
-
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = COCOHandler;
-}
-
 
 /**
  * AnnotationStore.js
@@ -1604,12 +1592,6 @@ class AnnotationStore {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AnnotationStore;
-}
-
-
 /**
  * FileManager.js
  * Handles file system operations using File System Access API
@@ -1939,12 +1921,6 @@ class FileManager {
         }
     }
 }
-
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FileManager;
-}
-
 
 /**
  * ImageCanvas.js
@@ -2365,12 +2341,6 @@ class ImageCanvas {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
-
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ImageCanvas;
-}
-
 
 /**
  * BoxEditor.js
@@ -2820,12 +2790,6 @@ class BoxEditor {
         document.dispatchEvent(event);
     }
 }
-
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BoxEditor;
-}
-
 
 /**
  * UIController.js
@@ -3375,16 +3339,17 @@ class UIController {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = UIController;
-}
-
-
 /**
  * main.js
  * Application initialization and orchestration
  */
+
+
+
+
+
+
+
 
 class NotatoApp {
     constructor() {
@@ -3718,7 +3683,6 @@ class NotatoApp {
 document.addEventListener('DOMContentLoaded', () => {
     window.notatoApp = new NotatoApp();
 });
-
 </script>
 </body>
 </html>

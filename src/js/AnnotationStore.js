@@ -378,7 +378,5 @@ class AnnotationStore {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AnnotationStore;
-}
+// Export for ES6 modules
+export default AnnotationStore;

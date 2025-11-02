@@ -156,7 +156,5 @@ class YOLOHandler {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = YOLOHandler;
-}
+// Export for ES6 modules
+export default YOLOHandler;

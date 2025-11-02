@@ -418,7 +418,5 @@ class ImageCanvas {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ImageCanvas;
-}
+// Export for ES6 modules
+export default ImageCanvas;

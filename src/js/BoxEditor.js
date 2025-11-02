@@ -447,7 +447,5 @@ class BoxEditor {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BoxEditor;
-}
+// Export for ES6 modules
+export default BoxEditor;

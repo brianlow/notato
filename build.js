@@ -29,7 +29,18 @@ const jsFiles = [
 const jsContent = jsFiles.map(file => {
     const filePath = path.join(__dirname, 'src', 'js', file);
     console.log(`  - ${file}`);
-    return fs.readFileSync(filePath, 'utf8');
+    let content = fs.readFileSync(filePath, 'utf8');
+
+    // Remove ES6 import statements
+    content = content.replace(/^import\s+.*from\s+['"].*['"];?\s*$/gm, '');
+
+    // Remove ES6 export statements
+    content = content.replace(/^export\s+default\s+\w+;?\s*$/gm, '');
+
+    // Remove export comments
+    content = content.replace(/\/\/\s*Export for ES6 modules\s*$/gm, '');
+
+    return content.trim();
 }).join('\n\n');
 
 // Read HTML template

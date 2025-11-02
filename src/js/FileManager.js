@@ -328,7 +328,5 @@ class FileManager {
     }
 }
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FileManager;
-}
+// Export for ES6 modules
+export default FileManager;

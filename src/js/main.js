@@ -3,6 +3,14 @@
  * Application initialization and orchestration
  */
 
+import AnnotationStore from './AnnotationStore.js';
+import FileManager from './FileManager.js';
+import YOLOHandler from './YOLOHandler.js';
+import COCOHandler from './COCOHandler.js';
+import ImageCanvas from './ImageCanvas.js';
+import BoxEditor from './BoxEditor.js';
+import UIController from './UIController.js';
+
 class NotatoApp {
     constructor() {
         // Initialize modules
