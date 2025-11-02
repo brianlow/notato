@@ -4,12 +4,23 @@
   "description": "Lightweight browser-based image annotation tool for YOLO and COCO formats",
   "scripts": {
     "build": "node build.js",
-    "dev": "live-server src --port=8080"
+    "dev": "live-server src --port=8080",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
-  "keywords": ["annotation", "yolo", "coco", "bounding-box", "image-labeling"],
+  "keywords": [
+    "annotation",
+    "yolo",
+    "coco",
+    "bounding-box",
+    "image-labeling"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "@vitest/ui": "^4.0.6",
+    "live-server": "^1.2.2",
+    "vitest": "^4.0.6"
   }
 }
