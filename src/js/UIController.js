@@ -287,9 +287,7 @@ class UIController {
 
         const status = document.createElement('div');
         status.className = 'file-status';
-        if (image.modified) {
-            status.classList.add('modified');
-        } else if (image.boxes.length > 0) {
+        if (image.boxes.length > 0) {
             status.classList.add('annotated');
         } else {
             status.classList.add('unannotated');
@@ -368,8 +366,10 @@ class UIController {
         const isModified = this.store.isCurrentImageModified();
         if (isModified) {
             this.elements.saveBtn.classList.add('unsaved');
+            this.elements.saveBtn.disabled = false;
         } else {
             this.elements.saveBtn.classList.remove('unsaved');
+            this.elements.saveBtn.disabled = true;
         }
     }
 

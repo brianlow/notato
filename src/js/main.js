@@ -273,6 +273,11 @@ class NotatoApp {
                 return;
             }
 
+            // Don't save if there are no changes
+            if (!this.store.isCurrentImageModified()) {
+                return;
+            }
+
             this.uiController.setStatus('Saving...');
 
             const format = this.store.getState().format;
@@ -280,10 +285,10 @@ class NotatoApp {
             if (format === 'yolo') {
                 await this.saveYOLO(currentImage);
             } else {
-                await this.saveCOCO();
+                await this.saveCOCO(currentImage);
             }
 
-            this.store.clearImageModified(currentImage.id);
+            this.store.clearImageModified();
             this.uiController.showToast('success', 'Saved successfully');
             this.uiController.setStatus('Ready');
 
@@ -315,14 +320,12 @@ class NotatoApp {
     }
 
     /**
-     * Save COCO format
+     * Save COCO format (only current image)
      */
-    async saveCOCO() {
-        // Update COCO data with all images and annotations
-        const images = this.store.getAllImages();
+    async saveCOCO(currentImage) {
         const categories = this.store.getClasses();
 
-        // Set categories
+        // Set categories (only if not already set)
         const cocoCategories = categories.map((name, index) => ({
             id: index + 1,
             name: name,
@@ -330,32 +333,25 @@ class NotatoApp {
         }));
         this.cocoHandler.setCategories(cocoCategories);
 
-        // Update all images and their annotations
-        for (const image of images) {
-            const boxes = this.store.getBoxesForImage(image.id);
+        // Update only the current image's annotations
+        const boxes = this.store.getBoxesForImage(currentImage.id);
 
-            // Adjust class IDs for COCO (1-indexed)
-            const cocoBoxes = boxes.map(box => ({
-                ...box,
-                classId: box.classId + 1
-            }));
+        // Adjust class IDs for COCO (1-indexed)
+        const cocoBoxes = boxes.map(box => ({
+            ...box,
+            classId: box.classId + 1
+        }));
 
-            this.cocoHandler.setBoxesForImage(
-                image.fileName,
-                cocoBoxes,
-                image.width,
-                image.height
-            );
-        }
+        this.cocoHandler.setBoxesForImage(
+            currentImage.fileName,
+            cocoBoxes,
+            currentImage.width,
+            currentImage.height
+        );
 
         // Write to the same COCO file that was loaded
         const content = this.cocoHandler.stringify();
         await this.fileManager.writeTextFile(this.cocoAnnotationFile, content);
-
-        // Clear modified flag for all images
-        images.forEach(img => {
-            this.store.clearImageModified(img.id);
-        });
     }
 }
 
