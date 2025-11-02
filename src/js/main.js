@@ -84,6 +84,15 @@ class NotatoApp {
      */
     async handleOpenFolder() {
         try {
+            // Clear all prior state IMMEDIATELY when user attempts to load a folder
+            // This happens regardless of whether the load succeeds or fails
+            this.store.clear();
+            this.currentImageCache.clear();
+            this.imageCanvas.clear();
+            this.cocoHandler.initEmpty();
+            this.yoloHandler.setClasses([]);
+            this.fileManager.clear();  // Clear file cache to prevent reading stale files
+
             this.uiController.setStatus('Opening folder...');
 
             // Check API support
@@ -98,11 +107,6 @@ class NotatoApp {
             if (files.length === 0) {
                 throw new Error('No images found in selected folder');
             }
-
-            // Clear previous data before loading new folder
-            this.store.clear();
-            this.currentImageCache.clear();
-            this.imageCanvas.clear();
 
             this.uiController.setStatus(`Loading ${files.length} images...`);
             this.uiController.setFolderPath(this.fileManager.getDirectoryName());
