@@ -89,8 +89,8 @@ class NotatoApp {
             this.store.clear();
             this.currentImageCache.clear();
             this.imageCanvas.clear();
-            this.cocoHandler.initEmpty();
-            this.yoloHandler.setClasses([]);
+            this.formatHandlers.get('coco').initEmpty();
+            this.formatHandlers.get('yolo').setClasses([]);
             this.fileManager.clear();  // Clear file cache to prevent reading stale files
 
             this.uiController.setStatus('Opening folder...');
