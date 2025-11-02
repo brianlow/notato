@@ -218,38 +218,15 @@ class UIController {
             return;
         }
 
-        // Group by subfolder
-        const groups = {};
-        images.forEach(img => {
-            const folder = img.subfolder || 'root';
-            if (!groups[folder]) {
-                groups[folder] = [];
-            }
-            groups[folder].push(img);
-        });
+        // Sort images by filename
+        images.sort((a, b) => a.fileName.localeCompare(b.fileName));
 
         this.elements.fileList.innerHTML = '';
 
-        Object.entries(groups).forEach(([folder, imgs]) => {
-            const group = document.createElement('div');
-            group.className = 'file-group';
-
-            if (Object.keys(groups).length > 1) {
-                const header = document.createElement('div');
-                header.className = 'file-group-header';
-                header.innerHTML = `<span class="file-group-toggle">▼</span> ${folder}`;
-                group.appendChild(header);
-            }
-
-            // Sort images by filename within each subfolder
-            imgs.sort((a, b) => a.fileName.localeCompare(b.fileName));
-
-            imgs.forEach(img => {
-                const item = this.createFileItem(img, currentImageId);
-                group.appendChild(item);
-            });
-
-            this.elements.fileList.appendChild(group);
+        // Create flat list of images
+        images.forEach(img => {
+            const item = this.createFileItem(img, currentImageId);
+            this.elements.fileList.appendChild(item);
         });
     }
 

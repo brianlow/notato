@@ -90,8 +90,7 @@ class NotatoApp {
             const files = await this.fileManager.openFolder();
 
             if (files.length === 0) {
-                this.uiController.showToast('warning', 'No images found in folder');
-                return;
+                throw new Error('No images found in selected folder');
             }
 
             // Clear previous data before loading new folder
@@ -110,8 +109,7 @@ class NotatoApp {
                     fileName: file.name,
                     filePath: file.path,
                     width: imageData.width,
-                    height: imageData.height,
-                    subfolder: file.subfolder
+                    height: imageData.height
                 });
 
                 this.currentImageCache.set(imageId, imageData.url);
@@ -239,7 +237,10 @@ class NotatoApp {
                 });
             }
         } else {
-            // Initialize empty COCO dataset
+            // No annotation file found - initialize empty dataset
+            // Will create _annotations.coco.json on first save
+            console.log('No COCO annotations found. Starting with empty dataset.');
+            this.cocoAnnotationFile = '_annotations.coco.json';
             this.cocoHandler.initEmpty();
             this.store.setClasses(['object']);
         }

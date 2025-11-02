@@ -75,18 +75,13 @@ class FileManager {
                             name: entry.name,
                             path: path,
                             file: file,
-                            handle: fileHandle,
-                            subfolder: relativePath
+                            handle: fileHandle
                         });
 
                         this.fileCache.set(path, fileHandle);
                     }
-                } else if (entry.kind === 'directory') {
-                    // Recursively scan subdirectories
-                    const subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
-                    const subFiles = await this.scanDirectory(subDirHandle, path);
-                    files.push(...subFiles);
                 }
+                // Skip subdirectories - only scan root folder
             }
         } catch (error) {
             console.error('Error scanning directory:', error);
@@ -204,18 +199,11 @@ class FileManager {
      * @returns {string} Label file path
      */
     getYOLOLabelPath(imagePath) {
-        const dir = imagePath.substring(0, imagePath.lastIndexOf('/'));
         const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
         const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
 
-        // Try labels folder first
-        const labelsPath = dir.replace('images', 'labels');
-        if (labelsPath !== dir) {
-            return `${labelsPath}/${baseName}.txt`;
-        }
-
-        // Otherwise, same directory
-        return `${dir ? dir + '/' : ''}${baseName}.txt`;
+        // Label file in same directory as image
+        return `${baseName}.txt`;
     }
 
     /**

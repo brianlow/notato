@@ -1252,8 +1252,7 @@ class AnnotationStore {
             filePath: imageData.filePath,
             width: imageData.width,
             height: imageData.height,
-            boxes: imageData.boxes || [],
-            subfolder: imageData.subfolder || ''
+            boxes: imageData.boxes || []
         };
 
         this.state.images.set(id, image);
@@ -1707,18 +1706,13 @@ class FileManager {
                             name: entry.name,
                             path: path,
                             file: file,
-                            handle: fileHandle,
-                            subfolder: relativePath
+                            handle: fileHandle
                         });
 
                         this.fileCache.set(path, fileHandle);
                     }
-                } else if (entry.kind === 'directory') {
-                    // Recursively scan subdirectories
-                    const subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
-                    const subFiles = await this.scanDirectory(subDirHandle, path);
-                    files.push(...subFiles);
                 }
+                // Skip subdirectories - only scan root folder
             }
         } catch (error) {
             console.error('Error scanning directory:', error);
@@ -1836,18 +1830,11 @@ class FileManager {
      * @returns {string} Label file path
      */
     getYOLOLabelPath(imagePath) {
-        const dir = imagePath.substring(0, imagePath.lastIndexOf('/'));
         const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
         const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
 
-        // Try labels folder first
-        const labelsPath = dir.replace('images', 'labels');
-        if (labelsPath !== dir) {
-            return `${labelsPath}/${baseName}.txt`;
-        }
-
-        // Otherwise, same directory
-        return `${dir ? dir + '/' : ''}${baseName}.txt`;
+        // Label file in same directory as image
+        return `${baseName}.txt`;
     }
 
     /**
@@ -3060,38 +3047,15 @@ class UIController {
             return;
         }
 
-        // Group by subfolder
-        const groups = {};
-        images.forEach(img => {
-            const folder = img.subfolder || 'root';
-            if (!groups[folder]) {
-                groups[folder] = [];
-            }
-            groups[folder].push(img);
-        });
+        // Sort images by filename
+        images.sort((a, b) => a.fileName.localeCompare(b.fileName));
 
         this.elements.fileList.innerHTML = '';
 
-        Object.entries(groups).forEach(([folder, imgs]) => {
-            const group = document.createElement('div');
-            group.className = 'file-group';
-
-            if (Object.keys(groups).length > 1) {
-                const header = document.createElement('div');
-                header.className = 'file-group-header';
-                header.innerHTML = `<span class="file-group-toggle">▼</span> ${folder}`;
-                group.appendChild(header);
-            }
-
-            // Sort images by filename within each subfolder
-            imgs.sort((a, b) => a.fileName.localeCompare(b.fileName));
-
-            imgs.forEach(img => {
-                const item = this.createFileItem(img, currentImageId);
-                group.appendChild(item);
-            });
-
-            this.elements.fileList.appendChild(group);
+        // Create flat list of images
+        images.forEach(img => {
+            const item = this.createFileItem(img, currentImageId);
+            this.elements.fileList.appendChild(item);
         });
     }
 
@@ -3475,8 +3439,7 @@ class NotatoApp {
             const files = await this.fileManager.openFolder();
 
             if (files.length === 0) {
-                this.uiController.showToast('warning', 'No images found in folder');
-                return;
+                throw new Error('No images found in selected folder');
             }
 
             // Clear previous data before loading new folder
@@ -3495,8 +3458,7 @@ class NotatoApp {
                     fileName: file.name,
                     filePath: file.path,
                     width: imageData.width,
-                    height: imageData.height,
-                    subfolder: file.subfolder
+                    height: imageData.height
                 });
 
                 this.currentImageCache.set(imageId, imageData.url);
@@ -3624,7 +3586,10 @@ class NotatoApp {
                 });
             }
         } else {
-            // Initialize empty COCO dataset
+            // No annotation file found - initialize empty dataset
+            // Will create _annotations.coco.json on first save
+            console.log('No COCO annotations found. Starting with empty dataset.');
+            this.cocoAnnotationFile = '_annotations.coco.json';
             this.cocoHandler.initEmpty();
             this.store.setClasses(['object']);
         }
