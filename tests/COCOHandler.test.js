@@ -237,6 +237,40 @@ describe('COCOHandler', () => {
             const data = handler.getData();
             expect(data.annotations[0].id).toBe(1);
         });
+
+        it('should not add duplicate image when image ID is 0', () => {
+            // Bug fix test: image_id 0 should not be treated as falsy
+            const json = JSON.stringify({
+                images: [
+                    { id: 0, file_name: 'image_000000.jpg', width: 672, height: 672 }
+                ],
+                annotations: [
+                    { id: 0, image_id: 0, category_id: 0, bbox: [228, 142, 54, 81], area: 4374, iscrowd: 0 }
+                ],
+                categories: [
+                    { id: 0, name: 'lego', supercategory: 'part' }
+                ]
+            });
+
+            handler.parse(json);
+
+            // Update the box for the existing image
+            const updatedBoxes = [
+                { id: 0, classId: 0, x: 250, y: 150, width: 60, height: 90 }
+            ];
+            handler.setBoxesForImage('image_000000.jpg', updatedBoxes, 672, 672);
+
+            const data = handler.getData();
+            // Should still have only 1 image, not 2
+            expect(data.images).toHaveLength(1);
+            expect(data.images[0].id).toBe(0);
+            expect(data.images[0].file_name).toBe('image_000000.jpg');
+
+            // Annotation should be updated
+            expect(data.annotations).toHaveLength(1);
+            expect(data.annotations[0].bbox).toEqual([250, 150, 60, 90]);
+            expect(data.annotations[0].image_id).toBe(0);
+        });
     });
 
     describe('Category Management', () => {
