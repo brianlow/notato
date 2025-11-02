@@ -1064,7 +1064,7 @@ class COCOHandler {
      */
     getBoxesForImage(fileName) {
         const imageId = this.imageIdMap.get(fileName);
-        if (!imageId) return [];
+        if (imageId === undefined || imageId === null) return [];
 
         const boxes = this.data.annotations
             .filter(ann => ann.image_id === imageId)
@@ -2117,6 +2117,17 @@ class ImageCanvas {
     }
 
     /**
+     * Convert HSL color to HSLA with alpha
+     * @param {string} hslColor - HSL color string (e.g., "hsl(180, 70%, 50%)")
+     * @param {number} alpha - Alpha value (0-1)
+     * @returns {string} HSLA color string
+     */
+    hslToHsla(hslColor, alpha) {
+        // Convert hsl(h, s%, l%) to hsla(h, s%, l%, alpha)
+        return hslColor.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`);
+    }
+
+    /**
      * Main render function
      */
     render() {
@@ -2187,7 +2198,7 @@ class ImageCanvas {
 
         // Draw semi-transparent fill if selected
         if (selected) {
-            this.ctx.fillStyle = color + '20'; // Add alpha
+            this.ctx.fillStyle = this.hslToHsla(color, 0.12);
             this.ctx.fillRect(topLeft.x, topLeft.y, screenWidth, screenHeight);
         }
 
@@ -2326,7 +2337,7 @@ class ImageCanvas {
         this.ctx.setLineDash([5, 5]);
         this.ctx.strokeRect(topLeft.x, topLeft.y, width, height);
 
-        this.ctx.fillStyle = color + '20';
+        this.ctx.fillStyle = this.hslToHsla(color, 0.12);
         this.ctx.fillRect(topLeft.x, topLeft.y, width, height);
         this.ctx.restore();
     }
@@ -3570,10 +3581,12 @@ class NotatoApp {
 
             this.uiController.setStatus('Loading image...');
 
+            // Set current image BEFORE loading so render() uses correct boxes
+            this.store.setCurrentImage(imageId);
+
             const imageUrl = this.currentImageCache.get(imageId);
             await this.imageCanvas.loadImage(imageUrl, image.width, image.height);
 
-            this.store.setCurrentImage(imageId);
             this.uiController.setStatus('Ready');
 
         } catch (error) {

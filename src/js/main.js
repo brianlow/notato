@@ -230,10 +230,12 @@ class NotatoApp {
 
             this.uiController.setStatus('Loading image...');
 
+            // Set current image BEFORE loading so render() uses correct boxes
+            this.store.setCurrentImage(imageId);
+
             const imageUrl = this.currentImageCache.get(imageId);
             await this.imageCanvas.loadImage(imageUrl, image.width, image.height);
 
-            this.store.setCurrentImage(imageId);
             this.uiController.setStatus('Ready');
 
         } catch (error) {

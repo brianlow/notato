@@ -65,7 +65,7 @@ class COCOHandler {
      */
     getBoxesForImage(fileName) {
         const imageId = this.imageIdMap.get(fileName);
-        if (!imageId) return [];
+        if (imageId === undefined || imageId === null) return [];
 
         const boxes = this.data.annotations
             .filter(ann => ann.image_id === imageId)

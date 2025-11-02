@@ -193,6 +193,17 @@ class ImageCanvas {
     }
 
     /**
+     * Convert HSL color to HSLA with alpha
+     * @param {string} hslColor - HSL color string (e.g., "hsl(180, 70%, 50%)")
+     * @param {number} alpha - Alpha value (0-1)
+     * @returns {string} HSLA color string
+     */
+    hslToHsla(hslColor, alpha) {
+        // Convert hsl(h, s%, l%) to hsla(h, s%, l%, alpha)
+        return hslColor.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`);
+    }
+
+    /**
      * Main render function
      */
     render() {
@@ -263,7 +274,7 @@ class ImageCanvas {
 
         // Draw semi-transparent fill if selected
         if (selected) {
-            this.ctx.fillStyle = color + '20'; // Add alpha
+            this.ctx.fillStyle = this.hslToHsla(color, 0.12);
             this.ctx.fillRect(topLeft.x, topLeft.y, screenWidth, screenHeight);
         }
 
@@ -402,7 +413,7 @@ class ImageCanvas {
         this.ctx.setLineDash([5, 5]);
         this.ctx.strokeRect(topLeft.x, topLeft.y, width, height);
 
-        this.ctx.fillStyle = color + '20';
+        this.ctx.fillStyle = this.hslToHsla(color, 0.12);
         this.ctx.fillRect(topLeft.x, topLeft.y, width, height);
         this.ctx.restore();
     }
