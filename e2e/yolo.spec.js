@@ -6,7 +6,7 @@ test.describe('YOLO Dataset UI', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Wait for app to be ready
-    await expect(page.locator('h2:text("notato")')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.sidebar h2:text("notato")')).toBeVisible({ timeout: 10000 });
 
     // Verify YOLO load button is present
     await expect(page.locator('#loadYoloBtn')).toBeVisible();
