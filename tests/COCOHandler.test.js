@@ -342,15 +342,14 @@ describe('COCOHandler', () => {
     });
 
     describe('Real COCO File Integration', () => {
-        it('should correctly parse sample COCO file from datasets/coco-3', () => {
-            const cocoPath = join(process.cwd(), 'datasets/coco-3/_annotations.coco.json');
+        it('should parse fixed composition with exact labels and counts', () => {
+            const cocoPath = join(process.cwd(), 'datasets/coco/_annotations.coco.json');
             const content = readFileSync(cocoPath, 'utf-8');
 
             handler.parse(content);
 
             const data = handler.getData();
             expect(data.images).toHaveLength(3);
-            expect(data.annotations.length).toBeGreaterThan(0);
             expect(data.categories).toHaveLength(3);
 
             // Verify categories
@@ -358,16 +357,27 @@ describe('COCOHandler', () => {
             expect(data.categories[1].name).toBe('tatertot');
             expect(data.categories[2].name).toBe('fries');
 
-            // Verify we can retrieve boxes for the first image
+            // Verify fixed composition on image_0: 1 potato, 2 tatertots, 1 fries
             const boxes = handler.getBoxesForImage('image_0.jpg');
-            expect(boxes.length).toBeGreaterThan(0);
-            boxes.forEach(box => {
-                expect(['potato', 'tatertot', 'fries']).toContain(box.className);
-            });
+            expect(boxes).toHaveLength(4);
+
+            const potatoBoxes = boxes.filter(b => b.className === 'potato');
+            const tatertotBoxes = boxes.filter(b => b.className === 'tatertot');
+            const friesBoxes = boxes.filter(b => b.className === 'fries');
+
+            expect(potatoBoxes).toHaveLength(1);
+            expect(tatertotBoxes).toHaveLength(2);
+            expect(friesBoxes).toHaveLength(1);
+
+            // Verify class IDs
+            expect(potatoBoxes[0].classId).toBe(0);
+            expect(tatertotBoxes[0].classId).toBe(1);
+            expect(tatertotBoxes[1].classId).toBe(1);
+            expect(friesBoxes[0].classId).toBe(2);
         });
 
         it('should correctly parse COCO files with multiple categories', () => {
-            const cocoPath = join(process.cwd(), 'datasets/coco-3/_annotations.coco.json');
+            const cocoPath = join(process.cwd(), 'datasets/coco/_annotations.coco.json');
             const content = readFileSync(cocoPath, 'utf-8');
 
             handler.parse(content);
@@ -397,7 +407,7 @@ describe('COCOHandler', () => {
         });
 
         it('should handle COCO files with image dimensions', () => {
-            const cocoPath = join(process.cwd(), 'datasets/coco-3/_annotations.coco.json');
+            const cocoPath = join(process.cwd(), 'datasets/coco/_annotations.coco.json');
             const content = readFileSync(cocoPath, 'utf-8');
 
             handler.parse(content);

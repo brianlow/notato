@@ -193,6 +193,38 @@ function selectRandomImages(classImages, count) {
   return selected;
 }
 
+// Create fixed composition for testing
+function createFixedComposition(classImages) {
+  const selected = [];
+  const existingBoxes = [];
+
+  // Fixed composition: 1 potato, 2 tatertots, 1 fries
+  const composition = [
+    { className: 'potato', size: 120 },
+    { className: 'tatertot', size: 100 },
+    { className: 'tatertot', size: 90 },
+    { className: 'fries', size: 110 }
+  ];
+
+  for (const spec of composition) {
+    const availableImages = classImages[spec.className];
+    const filename = availableImages[0]; // Use first image for consistency
+
+    const position = findNonOverlappingPosition(spec.size, spec.size, existingBoxes);
+
+    if (position) {
+      selected.push({
+        filename,
+        className: spec.className,
+        ...position
+      });
+      existingBoxes.push(position);
+    }
+  }
+
+  return selected;
+}
+
 // Main dataset generation
 async function generateDatasets() {
   console.log('Generating sample datasets...\n');
@@ -203,13 +235,21 @@ async function generateDatasets() {
   console.log(`  tatertot: ${classImages.tatertot.length}`);
   console.log(`  fries: ${classImages.fries.length}\n`);
 
-  // Dataset 1: YOLO with 3 images
-  console.log('Creating Dataset 1: YOLO format, 3 images...');
+  // Dataset 1: YOLO with classes.txt, 3 images (first one fixed composition)
+  console.log('Creating Dataset 1: YOLO format with classes.txt, 3 images...');
   const yoloDir = path.join(__dirname, 'datasets', 'yolo');
   fs.mkdirSync(yoloDir, { recursive: true });
 
-  for (let i = 0; i < 3; i++) {
-    const imageCount = Math.floor(Math.random() * 8) + 3; // 3-10 images
+  // First image: fixed composition (1 potato, 2 tatertots, 1 fries)
+  const fixedObjects1 = createFixedComposition(classImages);
+  const { imageBuffer: fixedBuffer1, boxes: fixedBoxes1 } = await createAnnotatedImage(fixedObjects1);
+  fs.writeFileSync(path.join(yoloDir, 'image_0.jpg'), fixedBuffer1);
+  fs.writeFileSync(path.join(yoloDir, 'image_0.txt'), generateYOLO(fixedBoxes1));
+  console.log(`  Generated image_0.jpg with ${fixedBoxes1.length} annotations (fixed: 1 potato, 2 tatertots, 1 fries)`);
+
+  // Remaining images: random
+  for (let i = 1; i < 3; i++) {
+    const imageCount = Math.floor(Math.random() * 8) + 3;
     const objects = selectRandomImages(classImages, imageCount);
     const { imageBuffer, boxes } = await createAnnotatedImage(objects);
 
@@ -221,51 +261,54 @@ async function generateDatasets() {
     console.log(`  Generated ${imageName} with ${boxes.length} annotations`);
   }
 
-  // Write classes.txt
   fs.writeFileSync(path.join(yoloDir, 'classes.txt'), CLASSES.join('\n') + '\n');
   console.log('  Generated classes.txt\n');
 
-  // Dataset 2: COCO with 1 image, no classes.txt
-  console.log('Creating Dataset 2: COCO format, 1 image, no classes.txt...');
-  const coco1Dir = path.join(__dirname, 'datasets', 'coco-1');
-  fs.mkdirSync(coco1Dir, { recursive: true });
+  // Dataset 2: YOLO without classes.txt, 1 image
+  console.log('Creating Dataset 2: YOLO format without classes.txt, 1 image...');
+  const yoloNoClassesDir = path.join(__dirname, 'datasets', 'yolo-no-classes');
+  fs.mkdirSync(yoloNoClassesDir, { recursive: true });
 
   const imageCount2 = Math.floor(Math.random() * 8) + 3;
   const objects2 = selectRandomImages(classImages, imageCount2);
   const { imageBuffer: imageBuffer2, boxes: boxes2 } = await createAnnotatedImage(objects2);
 
-  const imageName2 = 'image_0.jpg';
-  fs.writeFileSync(path.join(coco1Dir, imageName2), imageBuffer2);
+  fs.writeFileSync(path.join(yoloNoClassesDir, 'image_0.jpg'), imageBuffer2);
+  fs.writeFileSync(path.join(yoloNoClassesDir, 'image_0.txt'), generateYOLO(boxes2));
+  console.log(`  Generated image_0.jpg with ${boxes2.length} annotations (no classes.txt)\n`);
 
-  const coco2 = generateCOCO([imageName2], [boxes2]);
-  fs.writeFileSync(path.join(coco1Dir, '_annotations.coco.json'), JSON.stringify(coco2, null, 2));
-  console.log(`  Generated ${imageName2} with ${boxes2.length} annotations\n`);
-
-  // Dataset 3: COCO with 3 images and classes.txt
-  console.log('Creating Dataset 3: COCO format, 3 images, with classes.txt...');
-  const coco3Dir = path.join(__dirname, 'datasets', 'coco-3');
-  fs.mkdirSync(coco3Dir, { recursive: true });
+  // Dataset 3: COCO format, 3 images (first one fixed composition)
+  console.log('Creating Dataset 3: COCO format, 3 images...');
+  const cocoDir = path.join(__dirname, 'datasets', 'coco');
+  fs.mkdirSync(cocoDir, { recursive: true });
 
   const allBoxes3 = [];
   const imageFiles3 = [];
 
-  for (let i = 0; i < 3; i++) {
+  // First image: fixed composition
+  const fixedObjects3 = createFixedComposition(classImages);
+  const { imageBuffer: fixedBuffer3, boxes: fixedBoxes3 } = await createAnnotatedImage(fixedObjects3);
+  fs.writeFileSync(path.join(cocoDir, 'image_0.jpg'), fixedBuffer3);
+  imageFiles3.push('image_0.jpg');
+  allBoxes3.push(fixedBoxes3);
+  console.log(`  Generated image_0.jpg with ${fixedBoxes3.length} annotations (fixed: 1 potato, 2 tatertots, 1 fries)`);
+
+  // Remaining images: random
+  for (let i = 1; i < 3; i++) {
     const imageCount = Math.floor(Math.random() * 8) + 3;
     const objects = selectRandomImages(classImages, imageCount);
     const { imageBuffer, boxes } = await createAnnotatedImage(objects);
 
     const imageName = `image_${i}.jpg`;
-    fs.writeFileSync(path.join(coco3Dir, imageName), imageBuffer);
+    fs.writeFileSync(path.join(cocoDir, imageName), imageBuffer);
     imageFiles3.push(imageName);
     allBoxes3.push(boxes);
     console.log(`  Generated ${imageName} with ${boxes.length} annotations`);
   }
 
   const coco3 = generateCOCO(imageFiles3, allBoxes3);
-  fs.writeFileSync(path.join(coco3Dir, '_annotations.coco.json'), JSON.stringify(coco3, null, 2));
-  fs.writeFileSync(path.join(coco3Dir, 'classes.txt'), CLASSES.join('\n') + '\n');
-  console.log('  Generated _annotations.coco.json');
-  console.log('  Generated classes.txt\n');
+  fs.writeFileSync(path.join(cocoDir, '_annotations.coco.json'), JSON.stringify(coco3, null, 2));
+  console.log('  Generated _annotations.coco.json\n');
 
   console.log('✓ All datasets generated successfully!');
 }

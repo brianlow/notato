@@ -217,21 +217,34 @@ describe('YOLOHandler', () => {
     });
 
     describe('Real YOLO File Integration', () => {
-        it('should correctly parse sample YOLO files from datasets/yolo', () => {
+        it('should parse fixed composition with exact labels and counts', () => {
             const classesPath = join(process.cwd(), 'datasets/yolo/classes.txt');
-            const sample1Path = join(process.cwd(), 'datasets/yolo/image_0.txt');
+            const imagePath = join(process.cwd(), 'datasets/yolo/image_0.txt');
 
             const classesContent = readFileSync(classesPath, 'utf-8');
-            const sample1Content = readFileSync(sample1Path, 'utf-8');
+            const imageContent = readFileSync(imagePath, 'utf-8');
 
             handler.parseClasses(classesContent);
-            const boxes = handler.parse(sample1Content, 640, 640);
+            const boxes = handler.parse(imageContent, 640, 640);
 
-            expect(boxes.length).toBeGreaterThan(0);
-            expect(boxes[0].classId).toBe(2);
-            expect(boxes[0].className).toBe('fries');
+            // Fixed composition: 1 potato, 2 tatertots, 1 fries
+            expect(boxes).toHaveLength(4);
 
-            // Verify all parsed boxes have valid coordinates
+            const potatoBoxes = boxes.filter(b => b.className === 'potato');
+            const tatertotBoxes = boxes.filter(b => b.className === 'tatertot');
+            const friesBoxes = boxes.filter(b => b.className === 'fries');
+
+            expect(potatoBoxes).toHaveLength(1);
+            expect(tatertotBoxes).toHaveLength(2);
+            expect(friesBoxes).toHaveLength(1);
+
+            // Verify class IDs match
+            expect(potatoBoxes[0].classId).toBe(0);
+            expect(tatertotBoxes[0].classId).toBe(1);
+            expect(tatertotBoxes[1].classId).toBe(1);
+            expect(friesBoxes[0].classId).toBe(2);
+
+            // Verify all coordinates are valid
             boxes.forEach(box => {
                 expect(box.x).toBeGreaterThanOrEqual(0);
                 expect(box.y).toBeGreaterThanOrEqual(0);
