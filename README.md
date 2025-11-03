@@ -98,7 +98,7 @@ The E2E test suite includes:
 - Tests run in headless Chromium with `--single-process` flag for compatibility
 - Average test execution time: ~6 seconds for all 4 tests
 - Test reports are saved to `playwright-report/` (viewable with `npx playwright show-report`)
-- CI/CD environments should use: `npx playwright install --with-deps chromium`
+- CI/CD uses browser caching to speed up installation (~20-30s on cache hit vs ~60-90s cold)
 
 ## Supported Formats
 
