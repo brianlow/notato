@@ -63,21 +63,25 @@ html = html.replace(
     `<script>\n${jsContent}\n</script>`
 );
 
-// Write bundled file
+// Write bundled files
 const distPath = path.join(__dirname, 'dist');
 if (!fs.existsSync(distPath)) {
     fs.mkdirSync(distPath);
 }
 
-const outputPath = path.join(distPath, 'notato.html');
-fs.writeFileSync(outputPath, html);
+const notatoPath = path.join(distPath, 'notato.html');
+const indexPath = path.join(distPath, 'index.html');
+
+fs.writeFileSync(notatoPath, html);
+fs.writeFileSync(indexPath, html);
 
 // Get file size
-const stats = fs.statSync(outputPath);
+const stats = fs.statSync(notatoPath);
 const fileSizeInBytes = stats.size;
 const fileSizeInKB = (fileSizeInBytes / 1024).toFixed(2);
 
 console.log('\n✓ Build complete!');
-console.log(`✓ Output: ${outputPath}`);
+console.log(`✓ Output: ${notatoPath}`);
+console.log(`✓ Output: ${indexPath}`);
 console.log(`✓ Size: ${fileSizeInKB} KB`);
-console.log('\nTo use: Open dist/notato.html in a web browser (with a local server)');
+console.log('\nTo use: Open dist/notato.html or dist/index.html in a web browser (with a local server)');
