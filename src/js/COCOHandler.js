@@ -163,7 +163,6 @@ class COCOHandler extends FormatHandler {
 
             return this.data;
         } catch (error) {
-            console.error('Error parsing COCO JSON:', error);
             throw new Error('Invalid COCO JSON format');
         }
     }
