@@ -129,9 +129,12 @@ class ImageCanvas {
         this.zoom = Math.max(0.1, Math.min(5.0, this.zoom));
 
         // Adjust pan to zoom towards center point
+        // Account for the static offset when calculating zoom center
         const zoomRatio = this.zoom / oldZoom;
-        this.panX = centerX - (centerX - this.panX) * zoomRatio;
-        this.panY = centerY - (centerY - this.panY) * zoomRatio;
+        const adjustedCenterX = centerX - this.offsetX;
+        const adjustedCenterY = centerY - this.offsetY;
+        this.panX = adjustedCenterX - (adjustedCenterX - this.panX) * zoomRatio;
+        this.panY = adjustedCenterY - (adjustedCenterY - this.panY) * zoomRatio;
 
         this.store.setZoom(this.zoom);
         this.store.setPan(this.panX, this.panY);
