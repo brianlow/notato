@@ -240,22 +240,31 @@ describe('YOLOHandler', () => {
             });
         });
 
-        it('should correctly parse sample YOLO files from samples/yolo', () => {
-            const yoloPath = join(process.cwd(), 'samples/yolo/1737779468498-overhead-feeder-lower.txt');
+        it('should correctly parse YOLO files with multiple annotations', () => {
+            const classesPath = join(process.cwd(), 'datasets/yolo/classes.txt');
+            const yoloPath = join(process.cwd(), 'datasets/yolo/image_1.txt');
+
+            const classesContent = readFileSync(classesPath, 'utf-8');
             const content = readFileSync(yoloPath, 'utf-8');
 
-            // All boxes should be class 0 based on the file content
-            const boxes = handler.parse(content, 672, 672);
+            handler.parseClasses(classesContent);
+            const boxes = handler.parse(content, 640, 640);
 
             expect(boxes.length).toBeGreaterThan(0);
-            expect(boxes.every(box => box.classId === 0)).toBe(true);
+
+            // Verify all boxes have valid class IDs from our classes
+            boxes.forEach(box => {
+                expect(box.classId).toBeGreaterThanOrEqual(0);
+                expect(box.classId).toBeLessThan(3); // 3 classes: potato, tatertot, fries
+                expect(['potato', 'tatertot', 'fries']).toContain(box.className);
+            });
 
             // Verify coordinates are in valid pixel ranges
             boxes.forEach(box => {
                 expect(box.x).toBeGreaterThanOrEqual(0);
                 expect(box.y).toBeGreaterThanOrEqual(0);
-                expect(box.x + box.width).toBeLessThanOrEqual(672);
-                expect(box.y + box.height).toBeLessThanOrEqual(672);
+                expect(box.x + box.width).toBeLessThanOrEqual(640);
+                expect(box.y + box.height).toBeLessThanOrEqual(640);
             });
         });
     });
