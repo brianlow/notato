@@ -1,13 +1,18 @@
 {
   "name": "notato",
   "version": "1.0.0",
+  "type": "module",
   "description": "Lightweight browser-based image annotation tool for YOLO and COCO formats",
   "scripts": {
     "build": "node build.js",
     "dev": "live-server src --port=8080",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium"
   },
   "keywords": [
     "annotation",
@@ -19,7 +24,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@vitest/ui": "^4.0.6",
+    "http-server": "^14.1.1",
     "live-server": "^1.2.2",
     "vitest": "^4.0.6"
   }

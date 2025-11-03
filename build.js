@@ -3,8 +3,11 @@
  * Build script to bundle notato into a single HTML file
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 console.log('Building notato...\n');
 

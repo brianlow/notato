@@ -2,5 +2,9 @@ node_modules/
 .DS_Store
 *.log
 .env
+playwright-report/
+test-results/
+e2e/screenshots/
+tmp-playwright/
 dist/
 .claude
