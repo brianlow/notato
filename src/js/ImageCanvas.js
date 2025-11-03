@@ -37,7 +37,8 @@ class ImageCanvas {
         const lightness = 50;
 
         for (let i = 0; i < count; i++) {
-            const hue = (i * 360 / count) % 360;
+            // Start with purple (270°) instead of red (0°)
+            const hue = (270 + i * 360 / count) % 360;
             colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
         }
 

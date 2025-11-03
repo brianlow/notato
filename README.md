@@ -1,3 +1,6 @@
+![alt text](images/header.png "Image of potatoe characters")
+
+
 # notato - Image Annotation Tool
 
 A lightweight, browser-based image annotation tool for creating bounding box annotations in YOLO and COCO formats.
@@ -13,15 +16,21 @@ A lightweight, browser-based image annotation tool for creating bounding box ann
 
 ## Quick Start
 
+1. **Visit** [https://brianlow.github.io/notato/](https://brianlow.github.io/notato/)
+2. **Select format** (YOLO or COCO)
+3. **Open folder** with your images
+4. **Start annotating!**
+
+## Running Locally
+
+If you prefer to run notato locally:
+
 1. **Download** the `notato.html` file from the `dist/` folder
 2. **Start a local server** (required for file access):
    ```bash
    python3 -m http.server 8000
    ```
 3. **Open** `http://localhost:8000/notato.html` in your browser
-4. **Select format** (YOLO or COCO)
-5. **Open folder** with your images
-6. **Start annotating!**
 
 ## Development
 
@@ -103,13 +112,10 @@ One `.txt` file per image with normalized coordinates:
 
 Example folder structure:
 ```
-/dataset
-  /images
-    image1.jpg
-    image2.jpg
-  /labels
-    image1.txt
-    image2.txt
+image1.jpg
+image1.txt
+image2.jpg
+image2.txt
 ```
 
 ### COCO Format
