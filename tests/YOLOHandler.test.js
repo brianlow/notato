@@ -217,21 +217,27 @@ describe('YOLOHandler', () => {
     });
 
     describe('Real YOLO File Integration', () => {
-        it('should correctly parse sample YOLO files from test-dataset', () => {
-            const classesPath = join(process.cwd(), 'test-dataset/classes.txt');
-            const sample1Path = join(process.cwd(), 'test-dataset/labels/sample1.txt');
+        it('should correctly parse sample YOLO files from datasets/yolo', () => {
+            const classesPath = join(process.cwd(), 'datasets/yolo/classes.txt');
+            const sample1Path = join(process.cwd(), 'datasets/yolo/image_0.txt');
 
             const classesContent = readFileSync(classesPath, 'utf-8');
             const sample1Content = readFileSync(sample1Path, 'utf-8');
 
             handler.parseClasses(classesContent);
-            const boxes = handler.parse(sample1Content, 640, 480);
+            const boxes = handler.parse(sample1Content, 640, 640);
 
-            expect(boxes).toHaveLength(2);
-            expect(boxes[0].classId).toBe(0);
-            expect(boxes[0].className).toBe('person');
-            expect(boxes[1].classId).toBe(1);
-            expect(boxes[1].className).toBe('car');
+            expect(boxes.length).toBeGreaterThan(0);
+            expect(boxes[0].classId).toBe(2);
+            expect(boxes[0].className).toBe('fries');
+
+            // Verify all parsed boxes have valid coordinates
+            boxes.forEach(box => {
+                expect(box.x).toBeGreaterThanOrEqual(0);
+                expect(box.y).toBeGreaterThanOrEqual(0);
+                expect(box.x + box.width).toBeLessThanOrEqual(640);
+                expect(box.y + box.height).toBeLessThanOrEqual(640);
+            });
         });
 
         it('should correctly parse sample YOLO files from samples/yolo', () => {

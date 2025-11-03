@@ -80,15 +80,14 @@ The following requires a real browser with File System Access API:
    - `Delete` - Delete box
    - `Escape` - Deselect
 
-## Test Dataset Created
+## Sample Datasets Available
 
-I've created sample annotation files in `/test-dataset`:
-- `classes.txt` - Sample classes (person, car, dog)
-- `labels/sample1.txt` - YOLO format annotations
-- `labels/sample2.txt` - YOLO format annotations  
-- `annotations.json` - COCO format annotations
+Sample datasets with images and annotations are in `/datasets`:
+- `/datasets/yolo` - YOLO format (3 images, classes: potato, tatertot, fries)
+- `/datasets/coco-1` - COCO format (1 image, no classes.txt)
+- `/datasets/coco-3` - COCO format (3 images with classes.txt)
 
-**Note:** Add actual image files (sample1.jpg, sample2.jpg, etc.) to test fully.
+**Regenerate datasets:** Run `node generate-datasets.js`
 
 ## Integration Test Available
 
@@ -157,7 +156,7 @@ python3 -m http.server 8080
 # 3. Open in Chrome/Edge
 # http://localhost:8080/dist/notato.html
 
-# 4. Add test images to test-dataset/images/
+# 4. Use sample datasets in /datasets directory
 
 # 5. Test annotation workflow
 ```

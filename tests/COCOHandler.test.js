@@ -342,23 +342,28 @@ describe('COCOHandler', () => {
     });
 
     describe('Real COCO File Integration', () => {
-        it('should correctly parse sample COCO file from test-dataset', () => {
-            const cocoPath = join(process.cwd(), 'test-dataset/annotations.json');
+        it('should correctly parse sample COCO file from datasets/coco-3', () => {
+            const cocoPath = join(process.cwd(), 'datasets/coco-3/_annotations.coco.json');
             const content = readFileSync(cocoPath, 'utf-8');
 
             handler.parse(content);
 
             const data = handler.getData();
-            expect(data.images).toHaveLength(2);
-            expect(data.annotations).toHaveLength(2);
+            expect(data.images).toHaveLength(3);
+            expect(data.annotations.length).toBeGreaterThan(0);
             expect(data.categories).toHaveLength(3);
 
-            // Verify specific data
-            const boxes = handler.getBoxesForImage('sample1.jpg');
-            expect(boxes).toHaveLength(2);
-            expect(boxes[0].className).toBe('person');
-            expect(boxes[0].bbox || [boxes[0].x, boxes[0].y, boxes[0].width, boxes[0].height])
-                .toEqual([100, 100, 200, 150]);
+            // Verify categories
+            expect(data.categories[0].name).toBe('potato');
+            expect(data.categories[1].name).toBe('tatertot');
+            expect(data.categories[2].name).toBe('fries');
+
+            // Verify we can retrieve boxes for the first image
+            const boxes = handler.getBoxesForImage('image_0.jpg');
+            expect(boxes.length).toBeGreaterThan(0);
+            boxes.forEach(box => {
+                expect(['potato', 'tatertot', 'fries']).toContain(box.className);
+            });
         });
 
         it('should correctly parse COCO files from samples/coco/train', () => {

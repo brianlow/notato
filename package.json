@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node build.js",
     "dev": "live-server src --port=8080",
+    "generate-datasets": "node generate-datasets.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -28,6 +29,7 @@
     "@vitest/ui": "^4.0.6",
     "http-server": "^14.1.1",
     "live-server": "^1.2.2",
+    "sharp": "^0.34.4",
     "vitest": "^4.0.6"
   }
 }
