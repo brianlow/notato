@@ -68,6 +68,12 @@ The unit test suite includes:
 
 Run Playwright E2E tests that verify dataset loading in a real browser:
 
+**First-time setup:**
+```bash
+npm run test:e2e:install  # Install Chromium browser (one-time setup)
+```
+
+**Running tests:**
 ```bash
 npm run test:e2e         # Run E2E tests (headless)
 npm run test:e2e:headed  # Run E2E tests with visible browser
@@ -78,6 +84,12 @@ The E2E test suite includes:
 - **YOLO Dataset**: Load samples/yolo folder and verify bounding boxes display
 - **COCO Dataset**: Load samples/coco/train folder and verify annotations display
 - **Navigation**: Verify switching between images with different annotations
+
+**Configuration Notes:**
+- Tests run in headless Chromium with `--single-process` flag for compatibility
+- Average test execution time: ~6 seconds for all 4 tests
+- Test reports are saved to `playwright-report/` (viewable with `npx playwright show-report`)
+- CI/CD environments should use: `npx playwright install --with-deps chromium`
 
 ## Supported Formats
 

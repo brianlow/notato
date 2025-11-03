@@ -18,15 +18,23 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        // Force headless mode for CI compatibility
         headless: true,
         launchOptions: {
           args: [
+            // Security flags for CI/sandboxed environments
             '--no-sandbox',
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
+
+            // Performance and stability flags
+            '--disable-dev-shm-usage',  // Avoid /dev/shm issues
+            '--disable-gpu',            // Disable GPU in headless mode
             '--disable-software-rasterizer',
             '--disable-dev-tools',
+
+            // CRITICAL: --single-process prevents shared memory permission errors
+            // in restricted environments. Remove if running in a standard environment
+            // causes performance issues.
             '--single-process',
           ],
         },
