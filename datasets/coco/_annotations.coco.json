@@ -1,0 +1,255 @@
+{
+  "info": {
+    "description": "Sample dataset",
+    "version": "1.0",
+    "year": 2025
+  },
+  "licenses": [],
+  "images": [
+    {
+      "id": 0,
+      "file_name": "image_0.jpg",
+      "width": 640,
+      "height": 640
+    },
+    {
+      "id": 1,
+      "file_name": "image_1.jpg",
+      "width": 640,
+      "height": 640
+    },
+    {
+      "id": 2,
+      "file_name": "image_2.jpg",
+      "width": 640,
+      "height": 640
+    }
+  ],
+  "annotations": [
+    {
+      "id": 0,
+      "image_id": 0,
+      "category_id": 0,
+      "bbox": [
+        286,
+        196,
+        76,
+        120
+      ],
+      "area": 9120,
+      "iscrowd": 0
+    },
+    {
+      "id": 1,
+      "image_id": 0,
+      "category_id": 1,
+      "bbox": [
+        526,
+        388,
+        81,
+        100
+      ],
+      "area": 8100,
+      "iscrowd": 0
+    },
+    {
+      "id": 2,
+      "image_id": 0,
+      "category_id": 1,
+      "bbox": [
+        62,
+        429,
+        73,
+        90
+      ],
+      "area": 6570,
+      "iscrowd": 0
+    },
+    {
+      "id": 3,
+      "image_id": 0,
+      "category_id": 2,
+      "bbox": [
+        119,
+        520,
+        91,
+        110
+      ],
+      "area": 10010,
+      "iscrowd": 0
+    },
+    {
+      "id": 4,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        266,
+        128,
+        90,
+        111
+      ],
+      "area": 9990,
+      "iscrowd": 0
+    },
+    {
+      "id": 5,
+      "image_id": 1,
+      "category_id": 1,
+      "bbox": [
+        408,
+        118,
+        127,
+        174
+      ],
+      "area": 22098,
+      "iscrowd": 0
+    },
+    {
+      "id": 6,
+      "image_id": 1,
+      "category_id": 2,
+      "bbox": [
+        149,
+        266,
+        133,
+        166
+      ],
+      "area": 22078,
+      "iscrowd": 0
+    },
+    {
+      "id": 7,
+      "image_id": 1,
+      "category_id": 1,
+      "bbox": [
+        116,
+        77,
+        97,
+        133
+      ],
+      "area": 12901,
+      "iscrowd": 0
+    },
+    {
+      "id": 8,
+      "image_id": 1,
+      "category_id": 2,
+      "bbox": [
+        424,
+        404,
+        113,
+        153
+      ],
+      "area": 17289,
+      "iscrowd": 0
+    },
+    {
+      "id": 9,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        15,
+        447,
+        121,
+        190
+      ],
+      "area": 22990,
+      "iscrowd": 0
+    },
+    {
+      "id": 10,
+      "image_id": 1,
+      "category_id": 0,
+      "bbox": [
+        214,
+        470,
+        84,
+        105
+      ],
+      "area": 8820,
+      "iscrowd": 0
+    },
+    {
+      "id": 11,
+      "image_id": 2,
+      "category_id": 0,
+      "bbox": [
+        79,
+        198,
+        121,
+        149
+      ],
+      "area": 18029,
+      "iscrowd": 0
+    },
+    {
+      "id": 12,
+      "image_id": 2,
+      "category_id": 1,
+      "bbox": [
+        405,
+        363,
+        122,
+        159
+      ],
+      "area": 19398,
+      "iscrowd": 0
+    },
+    {
+      "id": 13,
+      "image_id": 2,
+      "category_id": 2,
+      "bbox": [
+        279,
+        456,
+        81,
+        97
+      ],
+      "area": 7857,
+      "iscrowd": 0
+    },
+    {
+      "id": 14,
+      "image_id": 2,
+      "category_id": 2,
+      "bbox": [
+        243,
+        245,
+        110,
+        150
+      ],
+      "area": 16500,
+      "iscrowd": 0
+    },
+    {
+      "id": 15,
+      "image_id": 2,
+      "category_id": 2,
+      "bbox": [
+        432,
+        142,
+        111,
+        138
+      ],
+      "area": 15318,
+      "iscrowd": 0
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "potato",
+      "supercategory": "food"
+    },
+    {
+      "id": 1,
+      "name": "tatertot",
+      "supercategory": "food"
+    },
+    {
+      "id": 2,
+      "name": "fries",
+      "supercategory": "food"
+    }
+  ]
+}

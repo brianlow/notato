@@ -237,18 +237,13 @@ Manual testing requires:
 
 ## Recommendations for Testing
 
-1. **Create Test Dataset:**
-   ```
-   /test-dataset
-     /images
-       image1.jpg
-       image2.jpg
-       image3.jpg
-     /labels  (for YOLO)
-       image1.txt
-     annotations.json  (for COCO)
-     classes.txt
-   ```
+1. **Use Sample Datasets:**
+   Sample datasets are available in the `/datasets` directory:
+   - `/datasets/yolo` - YOLO format with 3 images and classes.txt
+   - `/datasets/coco-1` - COCO format with 1 image (no classes.txt)
+   - `/datasets/coco-3` - COCO format with 3 images and classes.txt
+
+   Regenerate datasets by running: `node generate-datasets.js`
 
 2. **Use Chrome or Edge** (latest version) for full functionality
 

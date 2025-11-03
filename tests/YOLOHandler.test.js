@@ -217,39 +217,67 @@ describe('YOLOHandler', () => {
     });
 
     describe('Real YOLO File Integration', () => {
-        it('should correctly parse sample YOLO files from test-dataset', () => {
-            const classesPath = join(process.cwd(), 'test-dataset/classes.txt');
-            const sample1Path = join(process.cwd(), 'test-dataset/labels/sample1.txt');
+        it('should parse fixed composition with exact labels and counts', () => {
+            const classesPath = join(process.cwd(), 'datasets/yolo/classes.txt');
+            const imagePath = join(process.cwd(), 'datasets/yolo/image_0.txt');
 
             const classesContent = readFileSync(classesPath, 'utf-8');
-            const sample1Content = readFileSync(sample1Path, 'utf-8');
+            const imageContent = readFileSync(imagePath, 'utf-8');
 
             handler.parseClasses(classesContent);
-            const boxes = handler.parse(sample1Content, 640, 480);
+            const boxes = handler.parse(imageContent, 640, 640);
 
-            expect(boxes).toHaveLength(2);
-            expect(boxes[0].classId).toBe(0);
-            expect(boxes[0].className).toBe('person');
-            expect(boxes[1].classId).toBe(1);
-            expect(boxes[1].className).toBe('car');
+            // Fixed composition: 1 potato, 2 tatertots, 1 fries
+            expect(boxes).toHaveLength(4);
+
+            const potatoBoxes = boxes.filter(b => b.className === 'potato');
+            const tatertotBoxes = boxes.filter(b => b.className === 'tatertot');
+            const friesBoxes = boxes.filter(b => b.className === 'fries');
+
+            expect(potatoBoxes).toHaveLength(1);
+            expect(tatertotBoxes).toHaveLength(2);
+            expect(friesBoxes).toHaveLength(1);
+
+            // Verify class IDs match
+            expect(potatoBoxes[0].classId).toBe(0);
+            expect(tatertotBoxes[0].classId).toBe(1);
+            expect(tatertotBoxes[1].classId).toBe(1);
+            expect(friesBoxes[0].classId).toBe(2);
+
+            // Verify all coordinates are valid
+            boxes.forEach(box => {
+                expect(box.x).toBeGreaterThanOrEqual(0);
+                expect(box.y).toBeGreaterThanOrEqual(0);
+                expect(box.x + box.width).toBeLessThanOrEqual(640);
+                expect(box.y + box.height).toBeLessThanOrEqual(640);
+            });
         });
 
-        it('should correctly parse sample YOLO files from samples/yolo', () => {
-            const yoloPath = join(process.cwd(), 'samples/yolo/1737779468498-overhead-feeder-lower.txt');
+        it('should correctly parse YOLO files with multiple annotations', () => {
+            const classesPath = join(process.cwd(), 'datasets/yolo/classes.txt');
+            const yoloPath = join(process.cwd(), 'datasets/yolo/image_1.txt');
+
+            const classesContent = readFileSync(classesPath, 'utf-8');
             const content = readFileSync(yoloPath, 'utf-8');
 
-            // All boxes should be class 0 based on the file content
-            const boxes = handler.parse(content, 672, 672);
+            handler.parseClasses(classesContent);
+            const boxes = handler.parse(content, 640, 640);
 
             expect(boxes.length).toBeGreaterThan(0);
-            expect(boxes.every(box => box.classId === 0)).toBe(true);
+
+            // Verify all boxes have valid class IDs from our classes
+            boxes.forEach(box => {
+                expect(box.classId).toBeGreaterThanOrEqual(0);
+                expect(box.classId).toBeLessThan(3); // 3 classes: potato, tatertot, fries
+                expect(['potato', 'tatertot', 'fries']).toContain(box.className);
+            });
 
             // Verify coordinates are in valid pixel ranges
             boxes.forEach(box => {
                 expect(box.x).toBeGreaterThanOrEqual(0);
                 expect(box.y).toBeGreaterThanOrEqual(0);
-                expect(box.x + box.width).toBeLessThanOrEqual(672);
-                expect(box.y + box.height).toBeLessThanOrEqual(672);
+                expect(box.x + box.width).toBeLessThanOrEqual(640);
+                expect(box.y + box.height).toBeLessThanOrEqual(640);
             });
         });
     });
