@@ -245,11 +245,9 @@ class BoxEditor {
 
         const currentImage = this.store.getCurrentImage();
         const state = this.store.getState();
-        const classes = this.store.getClasses();
 
         const box = {
             classId: state.currentClassId,
-            className: classes[state.currentClassId] || `class_${state.currentClassId}`,
             x: Math.max(0, Math.min(this.startX, endX)),
             y: Math.max(0, Math.min(this.startY, endY)),
             width: Math.min(width, currentImage.width),

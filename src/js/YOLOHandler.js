@@ -134,7 +134,6 @@ class YOLOHandler extends FormatHandler {
 
             boxes.push({
                 classId,
-                className: this.classes[classId] || `class_${classId}`,
                 x: box.x,
                 y: box.y,
                 width: box.width,

@@ -187,11 +187,9 @@ class COCOHandler extends FormatHandler {
         const boxes = this.data.annotations
             .filter(ann => ann.image_id === imageId)
             .map(ann => {
-                const category = this.data.categories.find(cat => cat.id === ann.category_id);
                 return {
                     id: ann.id,
                     classId: ann.category_id,
-                    className: category ? category.name : `category_${ann.category_id}`,
                     x: ann.bbox[0],
                     y: ann.bbox[1],
                     width: ann.bbox[2],

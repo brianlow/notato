@@ -282,9 +282,9 @@ class ImageCanvas {
             this.ctx.fillRect(topLeft.x, topLeft.y, screenWidth, screenHeight);
         }
 
-        // Draw label - use className if available, otherwise look up from classes array
+        // Draw label - look up class name from classes array
         const classes = this.store.getClasses();
-        const label = box.className || classes[box.classId] || `Class ${box.classId}`;
+        const label = classes[box.classId] || `Class ${box.classId}`;
         this.ctx.font = '12px sans-serif';
         const textMetrics = this.ctx.measureText(label);
         const textWidth = textMetrics.width;
