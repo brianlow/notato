@@ -16,6 +16,7 @@ const css = fs.readFileSync(cssPath, 'utf8');
 // Read JavaScript files in order
 console.log('Reading JavaScript files...');
 const jsFiles = [
+    'FormatHandler.js',
     'YOLOHandler.js',
     'COCOHandler.js',
     'AnnotationStore.js',
