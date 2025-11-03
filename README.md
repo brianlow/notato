@@ -5,6 +5,8 @@
 
 A lightweight, browser-based image annotation tool for creating bounding box annotations in YOLO and COCO formats.
 
+![notato screenshot](images/screenshot.png)
+
 ## Features
 
 - 🎯 **Zero Installation**: Single HTML file - download and open in your browser
