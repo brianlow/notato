@@ -73,19 +73,16 @@ if (!fs.existsSync(distPath)) {
     fs.mkdirSync(distPath);
 }
 
-const notatoPath = path.join(distPath, 'notato.html');
 const indexPath = path.join(distPath, 'index.html');
 
-fs.writeFileSync(notatoPath, html);
 fs.writeFileSync(indexPath, html);
 
 // Get file size
-const stats = fs.statSync(notatoPath);
+const stats = fs.statSync(indexPath);
 const fileSizeInBytes = stats.size;
 const fileSizeInKB = (fileSizeInBytes / 1024).toFixed(2);
 
 console.log('\n✓ Build complete!');
-console.log(`✓ Output: ${notatoPath}`);
 console.log(`✓ Output: ${indexPath}`);
 console.log(`✓ Size: ${fileSizeInKB} KB`);
-console.log('\nTo use: Open dist/notato.html or dist/index.html in a web browser (with a local server)');
+console.log('\nTo use: Open dist/index.html in a web browser (with a local server)');
