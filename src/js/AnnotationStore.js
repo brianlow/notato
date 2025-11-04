@@ -102,7 +102,6 @@ class AnnotationStore {
         const box = {
             id,
             classId: boxData.classId,
-            className: boxData.className,
             x: boxData.x,
             y: boxData.y,
             width: boxData.width,

@@ -124,12 +124,12 @@ describe('COCOHandler', () => {
             const boxes = handler.getBoxesForImage('image1.jpg');
 
             expect(boxes).toHaveLength(2);
-            expect(boxes[0].className).toBe('person');
+            expect(boxes[0].classId).toBe(1);  // category_id: 1 (person)
             expect(boxes[0].x).toBe(100);
             expect(boxes[0].y).toBe(100);
             expect(boxes[0].width).toBe(200);
             expect(boxes[0].height).toBe(150);
-            expect(boxes[1].className).toBe('car');
+            expect(boxes[1].classId).toBe(2);  // category_id: 2 (car)
         });
 
         it('should return empty array for non-existent image', () => {
@@ -157,7 +157,7 @@ describe('COCOHandler', () => {
             const boxes = handler.getBoxesForImage('test.jpg');
 
             expect(boxes).toHaveLength(1);
-            expect(boxes[0].className).toBe('category_99');
+            expect(boxes[0].classId).toBe(99);
         });
     });
 
@@ -361,9 +361,9 @@ describe('COCOHandler', () => {
             const boxes = handler.getBoxesForImage('image_0.jpg');
             expect(boxes).toHaveLength(4);
 
-            const potatoBoxes = boxes.filter(b => b.className === 'potato');
-            const tatertotBoxes = boxes.filter(b => b.className === 'tatertot');
-            const friesBoxes = boxes.filter(b => b.className === 'fries');
+            const potatoBoxes = boxes.filter(b => b.classId === 0);
+            const tatertotBoxes = boxes.filter(b => b.classId === 1);
+            const friesBoxes = boxes.filter(b => b.classId === 2);
 
             expect(potatoBoxes).toHaveLength(1);
             expect(tatertotBoxes).toHaveLength(2);
@@ -398,9 +398,8 @@ describe('COCOHandler', () => {
             const boxes = handler.getBoxesForImage(firstImage.file_name);
             expect(boxes.length).toBeGreaterThan(0);
 
-            // All boxes should have valid classes
+            // All boxes should have valid class IDs
             boxes.forEach(box => {
-                expect(['potato', 'tatertot', 'fries']).toContain(box.className);
                 expect(box.classId).toBeGreaterThanOrEqual(0);
                 expect(box.classId).toBeLessThan(3);
             });

@@ -117,7 +117,6 @@ describe('AnnotationStore', () => {
         it('should add box to image', () => {
             const boxData = {
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -137,7 +136,6 @@ describe('AnnotationStore', () => {
         it('should add box reference to image', () => {
             const boxData = {
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -157,7 +155,6 @@ describe('AnnotationStore', () => {
 
             const boxData = {
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -174,7 +171,6 @@ describe('AnnotationStore', () => {
         it('should update box properties', () => {
             const boxId = store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -193,7 +189,6 @@ describe('AnnotationStore', () => {
         it('should delete box and remove from image', () => {
             const boxId = store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -211,7 +206,6 @@ describe('AnnotationStore', () => {
         it('should deselect box when deleting selected box', () => {
             const boxId = store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -229,7 +223,6 @@ describe('AnnotationStore', () => {
         it('should get all boxes for an image', () => {
             store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -239,7 +232,6 @@ describe('AnnotationStore', () => {
 
             store.addBox({
                 classId: 1,
-                className: 'car',
                 x: 300,
                 y: 200,
                 width: 150,
@@ -250,8 +242,8 @@ describe('AnnotationStore', () => {
             const boxes = store.getBoxesForImage(imageId);
 
             expect(boxes).toHaveLength(2);
-            expect(boxes[0].className).toBe('person');
-            expect(boxes[1].className).toBe('car');
+            expect(boxes[0].classId).toBe(0);
+            expect(boxes[1].classId).toBe(1);
         });
 
         it('should return empty array for image with no boxes', () => {
@@ -302,7 +294,6 @@ describe('AnnotationStore', () => {
             const imageId = store.addImage({ fileName: 'test.jpg', width: 640, height: 480 });
             const boxId = store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -323,7 +314,6 @@ describe('AnnotationStore', () => {
             const imageId = store.addImage({ fileName: 'test.jpg', width: 640, height: 480 });
             const boxId = store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -410,7 +400,6 @@ describe('AnnotationStore', () => {
             const imageId = store.addImage({ fileName: 'test.jpg', width: 640, height: 480 });
             store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
@@ -489,7 +478,6 @@ describe('AnnotationStore', () => {
             const imageId = store.addImage({ fileName: 'test.jpg', width: 640, height: 480 });
             store.addBox({
                 classId: 0,
-                className: 'person',
                 x: 100,
                 y: 150,
                 width: 200,
