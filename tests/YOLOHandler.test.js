@@ -137,7 +137,6 @@ describe('YOLOHandler', () => {
 
             // First box: person
             expect(boxes[0].classId).toBe(0);
-            expect(boxes[0].className).toBe('person');
             expect(boxes[0].x).toBe(350);  // 500 - 150
             expect(boxes[0].y).toBe(240);  // 400 - 160
             expect(boxes[0].width).toBe(300);
@@ -145,7 +144,6 @@ describe('YOLOHandler', () => {
 
             // Second box: car
             expect(boxes[1].classId).toBe(1);
-            expect(boxes[1].className).toBe('car');
             expect(boxes[1].x).toBe(175);  // 250 - 75
             expect(boxes[1].y).toBe(120);  // 200 - 80
             expect(boxes[1].width).toBe(150);
@@ -167,14 +165,13 @@ describe('YOLOHandler', () => {
             expect(boxes[0].classId).toBe(0);
         });
 
-        it('should use fallback class name for unknown classes', () => {
+        it('should parse boxes with unknown class IDs', () => {
             const content = '5 0.5 0.5 0.3 0.4\n';
 
             const boxes = handler.parse(content, 1000, 800);
 
             expect(boxes).toHaveLength(1);
             expect(boxes[0].classId).toBe(5);
-            expect(boxes[0].className).toBe('class_5');
         });
     });
 
@@ -230,9 +227,9 @@ describe('YOLOHandler', () => {
             // Fixed composition: 1 potato, 2 tatertots, 1 fries
             expect(boxes).toHaveLength(4);
 
-            const potatoBoxes = boxes.filter(b => b.className === 'potato');
-            const tatertotBoxes = boxes.filter(b => b.className === 'tatertot');
-            const friesBoxes = boxes.filter(b => b.className === 'fries');
+            const potatoBoxes = boxes.filter(b => b.classId === 0);
+            const tatertotBoxes = boxes.filter(b => b.classId === 1);
+            const friesBoxes = boxes.filter(b => b.classId === 2);
 
             expect(potatoBoxes).toHaveLength(1);
             expect(tatertotBoxes).toHaveLength(2);
@@ -269,7 +266,6 @@ describe('YOLOHandler', () => {
             boxes.forEach(box => {
                 expect(box.classId).toBeGreaterThanOrEqual(0);
                 expect(box.classId).toBeLessThan(3); // 3 classes: potato, tatertot, fries
-                expect(['potato', 'tatertot', 'fries']).toContain(box.className);
             });
 
             // Verify coordinates are in valid pixel ranges
