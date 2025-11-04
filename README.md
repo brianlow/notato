@@ -38,69 +38,28 @@ If you prefer to run notato locally:
 
 ### Setup
 
-```bash
-npm install
+```sh
+npm install     # one time setup
+npm run dev     # open http://localhost:8080
+npm run build   # test the build
 ```
-
-### Development Server
-
-```bash
-npm run dev
-```
-
-Then open `http://localhost:8080` in your browser.
-
-### Build
-
-```bash
-npm run build
-```
-
-This creates `dist/notato.html` - a single file containing the entire application.
 
 ### Testing
 
-#### Unit Tests
-
-Run the unit test suite (80 tests covering core functionality):
-
-```bash
+Unit tests:
+```sh
 npm test                 # Run all unit tests once
 npm run test:watch       # Run tests in watch mode (re-runs on changes)
 npm run test:ui          # Open Vitest UI in browser
 ```
 
-The unit test suite includes:
-- **YOLOHandler**: Coordinate conversions, parsing, real file integration
-- **COCOHandler**: JSON parsing, box retrieval, category management
-- **AnnotationStore**: State management, CRUD operations, event system
-
-#### End-to-End Tests
-
-Run Playwright E2E tests that verify dataset loading in a real browser:
-
-**First-time setup:**
-```bash
+Playwright E2E tests:
+```sh
 npm run test:e2e:install  # Install Chromium browser (one-time setup)
-```
-
-**Running tests:**
-```bash
 npm run test:e2e         # Run E2E tests (headless)
 npm run test:e2e:headed  # Run E2E tests with visible browser
 npm run test:e2e:ui      # Open Playwright UI for debugging tests
 ```
-
-The E2E test suite includes:
-- **YOLO Dataset**: Load samples/yolo folder and verify bounding boxes display
-- **COCO Dataset**: Load samples/coco/train folder and verify annotations display
-- **Navigation**: Verify switching between images with different annotations
-
-**Configuration Notes:**
-- Tests run in headless Chromium with `--single-process` flag for compatibility
-- Average test execution time: ~6 seconds for all 4 tests
-- Test reports are saved to `playwright-report/` (viewable with `npx playwright show-report`)
-- CI/CD uses browser caching to speed up installation (~20-30s on cache hit vs ~60-90s cold)
 
 ## Supported Formats
 
@@ -145,8 +104,8 @@ Single `annotations.json` file for the entire dataset:
 ## Browser Compatibility
 
 - **Chrome/Edge 86+**: Full support with File System Access API
-- **Firefox**: Drag-drop fallback
-- **Safari**: Drag-drop fallback
+- **Firefox**: Not supported
+- **Safari**: Not supported
 
 ## Troubleshooting
 
@@ -163,7 +122,3 @@ Make sure you're running the app from a local server (not opening the file direc
 ### Images not loading?
 
 Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.bmp`
-
-## License
-
-MIT
