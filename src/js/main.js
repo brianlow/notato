@@ -7,6 +7,7 @@ import AnnotationStore from './AnnotationStore.js';
 import FileManager from './FileManager.js';
 import YOLOHandler from './YOLOHandler.js';
 import COCOHandler from './COCOHandler.js';
+import NDJSONHandler from './NDJSONHandler.js';
 import ImageCanvas from './ImageCanvas.js';
 import BoxEditor from './BoxEditor.js';
 import UIController from './UIController.js';
@@ -20,7 +21,8 @@ class NotatoApp {
         // Format handlers registry
         this.formatHandlers = new Map([
             ['yolo', new YOLOHandler()],
-            ['coco', new COCOHandler()]
+            ['coco', new COCOHandler()],
+            ['ndjson', new NDJSONHandler()]
         ]);
         this.currentHandler = this.formatHandlers.get('yolo'); // Default to YOLO
 
@@ -63,6 +65,13 @@ class NotatoApp {
             this.handleOpenFolder();
         });
 
+        // Load NDJSON button
+        document.getElementById('loadNdjsonBtn').addEventListener('click', () => {
+            this.currentHandler = this.formatHandlers.get('ndjson');
+            this.store.setFormat('ndjson');
+            this.handleOpenFolder();
+        });
+
         // Save button
         document.getElementById('saveBtn').addEventListener('click', () => {
             this.handleSave();
@@ -91,6 +100,7 @@ class NotatoApp {
             this.imageCanvas.clear();
             this.formatHandlers.get('coco').initEmpty();
             this.formatHandlers.get('yolo').setClasses([]);
+            this.formatHandlers.get('ndjson').initEmpty();
             this.fileManager.clear();  // Clear file cache to prevent reading stale files
 
             this.uiController.setStatus('Opening folder...');

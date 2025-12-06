@@ -12,6 +12,7 @@ class UIController {
             // Format
             loadYoloBtn: document.getElementById('loadYoloBtn'),
             loadCocoBtn: document.getElementById('loadCocoBtn'),
+            loadNdjsonBtn: document.getElementById('loadNdjsonBtn'),
             folderPath: document.getElementById('folderPath'),
 
             // Class management

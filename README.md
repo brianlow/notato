@@ -10,7 +10,7 @@ A lightweight, browser-based image annotation tool for creating bounding box ann
 ## Features
 
 - 🎯 **Zero Installation**: Single HTML file - download and open in your browser
-- 📦 **Multiple Formats**: Native support for YOLO and COCO annotation formats
+- 📦 **Multiple Formats**: Native support for YOLO, COCO, and Ultralytics NDJSON annotation formats
 - 🖼️ **Intuitive UI**: Simple two-column layout with thumbnail preview
 - ⚡ **Works Offline**: No internet connection required
 - 🎨 **Visual Editing**: Draw, resize, and move bounding boxes with ease
@@ -19,7 +19,7 @@ A lightweight, browser-based image annotation tool for creating bounding box ann
 ## Quick Start
 
 1. **Visit** [https://brianlow.github.io/notato/](https://brianlow.github.io/notato/)
-2. **Select format** (YOLO or COCO)
+2. **Select format** (YOLO, COCO, or NDJSON)
 3. **Open folder** with your images
 4. **Start annotating!**
 
@@ -91,6 +91,20 @@ Single `annotations.json` file for the entire dataset:
 }
 ```
 
+### Ultralytics NDJSON Format
+
+Newline-delimited JSON format with one record per line. The first line contains dataset metadata, and subsequent lines contain image records with annotations.
+
+Format: `dataset.ndjson` or any `.ndjson`/`.json` file
+
+```json
+{"type":"dataset","task":"detect","class_names":{"0":"person","1":"car","2":"dog"}}
+{"type":"image","file":"image1.jpg","width":640,"height":480,"annotations":{"boxes":[[0,0.5,0.5,0.3,0.4]]}}
+{"type":"image","file":"image2.jpg","width":640,"height":480,"annotations":{"boxes":[[1,0.25,0.75,0.2,0.3]]}}
+```
+
+Box format: `[class_id, center_x, center_y, width, height]` (normalized 0-1)
+
 ## Keyboard Shortcuts
 
 - `Delete` - Delete selected box
@@ -117,6 +131,7 @@ Make sure you're running the app from a local server (not opening the file direc
 
 - For YOLO: Check that `.txt` files have the same name as images
 - For COCO: Look for `annotations.json` or `instances_default.json`
+- For NDJSON: Look for `dataset.ndjson` or any `.ndjson`/`.json` file
 - Verify the format matches the selected mode
 
 ### Images not loading?

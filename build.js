@@ -22,6 +22,7 @@ const jsFiles = [
     'FormatHandler.js',
     'YOLOHandler.js',
     'COCOHandler.js',
+    'NDJSONHandler.js',
     'AnnotationStore.js',
     'FileManager.js',
     'ImageCanvas.js',
