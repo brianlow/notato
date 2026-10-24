@@ -278,12 +278,52 @@ class UIController {
 
         item.appendChild(info);
 
+        // Row actions
+        const actions = document.createElement('div');
+        actions.className = 'file-actions';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'file-action-btn copy';
+        copyBtn.title = 'Copy filename';
+        copyBtn.textContent = '⧉';
+        copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.copyFileName(image.fileName);
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'file-action-btn delete';
+        deleteBtn.title = 'Move to _deleted folder';
+        deleteBtn.textContent = '🗑';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const event = new CustomEvent('imageDeleteRequested', { detail: { imageId: image.id } });
+            document.dispatchEvent(event);
+        });
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(deleteBtn);
+        item.appendChild(actions);
+
         item.addEventListener('click', () => {
             const event = new CustomEvent('imageSelected', { detail: { imageId: image.id } });
             document.dispatchEvent(event);
         });
 
         return item;
+    }
+
+    /**
+     * Copy a filename to the clipboard
+     */
+    async copyFileName(fileName) {
+        try {
+            await navigator.clipboard.writeText(fileName);
+            this.showToast('success', `Copied ${fileName}`);
+        } catch (error) {
+            console.error('Error copying filename:', error);
+            this.showToast('error', 'Failed to copy filename');
+        }
     }
 
     /**
@@ -315,6 +355,7 @@ class UIController {
             this.updateFileList();
         } else {
             this.elements.fileInfo.textContent = 'No image loaded';
+            this.elements.canvasContainer.querySelector('.empty-canvas-state').style.display = '';
         }
 
         this.updateAnnotationCount();

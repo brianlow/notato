@@ -94,6 +94,16 @@ class YOLOHandler extends FormatHandler {
     }
 
     /**
+     * Move the image's label file to the deleted folder
+     * @param {FileManager} fileManager
+     * @param {Object} image - Image object
+     * @returns {Promise<void>}
+     */
+    async remove(fileManager, image) {
+        await fileManager.moveToDeleted(this.getLabelPath(image.filePath));
+    }
+
+    /**
      * Get label file path for an image
      * @param {string} imagePath - Image file path (e.g., "image1.jpg")
      * @returns {string} - Label file path (e.g., "image1.txt")

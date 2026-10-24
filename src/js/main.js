@@ -82,6 +82,11 @@ class NotatoApp {
             this.loadImage(e.detail.imageId);
         });
 
+        // Delete request
+        document.addEventListener('imageDeleteRequested', (e) => {
+            this.handleDeleteImage(e.detail.imageId);
+        });
+
         // Save request
         document.addEventListener('saveRequested', () => {
             this.handleSave();
@@ -190,6 +195,44 @@ class NotatoApp {
         } catch (error) {
             console.error('Error loading image:', error);
             this.uiController.showToast('error', 'Failed to load image');
+        }
+    }
+
+    /**
+     * Move an image and its annotations to the deleted folder
+     */
+    async handleDeleteImage(imageId) {
+        try {
+            const image = this.store.getImage(imageId);
+            if (!image) return;
+
+            // Pick the neighbor in list order to show next
+            const images = this.store.getAllImages().sort((a, b) => a.fileName.localeCompare(b.fileName));
+            const index = images.findIndex(img => img.id === imageId);
+            const nextImage = images[index + 1] || images[index - 1];
+            const wasCurrent = this.store.getState().currentImageId === imageId;
+
+            // Move the image first so a failure leaves the dataset untouched
+            await this.fileManager.moveToDeleted(image.filePath);
+            await this.currentHandler.remove(this.fileManager, image);
+
+            this.store.removeImage(imageId);
+            this.currentImageCache.delete(imageId);
+
+            if (wasCurrent) {
+                if (nextImage) {
+                    await this.loadImage(nextImage.id);
+                } else {
+                    this.imageCanvas.clear();
+                    this.store.setCurrentImage(null);
+                }
+            }
+
+            this.uiController.showToast('success', `Moved ${image.fileName} to ${this.fileManager.deletedFolder}/`);
+
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            this.uiController.showToast('error', 'Failed to delete: ' + error.message);
         }
     }
 

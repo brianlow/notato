@@ -135,6 +135,27 @@ class NDJSONHandler extends FormatHandler {
     }
 
     /**
+     * Remove an image record, appending it to an NDJSON file in the deleted folder
+     * @param {FileManager} fileManager
+     * @param {Object} image - Image object
+     * @returns {Promise<void>}
+     */
+    async remove(fileManager, image) {
+        const record = this.imageRecords.get(image.fileName);
+        if (!record) return;
+
+        // Write the deleted copy first so annotations are never lost
+        const deletedPath = `${fileManager.deletedFolder}/${this.annotationFile}`;
+        const existing = await fileManager.readTextFile(deletedPath);
+        const lines = existing ? [existing.trimEnd()] : [JSON.stringify(this.dataset)];
+        lines.push(JSON.stringify(record));
+        await fileManager.writeTextFile(deletedPath, lines.join('\n') + '\n');
+
+        this.imageRecords.delete(image.fileName);
+        await fileManager.writeTextFile(this.annotationFile, this.stringify());
+    }
+
+    /**
      * Parse NDJSON content
      * @param {string} content - NDJSON content
      */

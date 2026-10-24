@@ -136,6 +136,31 @@ class COCOHandler extends FormatHandler {
     }
 
     /**
+     * Remove an image and its annotations, appending them to a COCO file in the deleted folder
+     * @param {FileManager} fileManager
+     * @param {Object} image - Image object
+     * @returns {Promise<void>}
+     */
+    async remove(fileManager, image) {
+        const imageId = this.imageIdMap.get(image.fileName);
+        if (imageId === undefined || imageId === null) return;
+
+        // Write the deleted copy first so annotations are never lost
+        const deletedPath = `${fileManager.deletedFolder}/${this.annotationFile}`;
+        const existing = await fileManager.readTextFile(deletedPath);
+        const deleted = existing ? JSON.parse(existing) : { images: [], annotations: [], categories: [] };
+        deleted.images.push(...this.data.images.filter(img => img.id === imageId));
+        deleted.annotations.push(...this.data.annotations.filter(ann => ann.image_id === imageId));
+        deleted.categories = this.data.categories;
+        await fileManager.writeTextFile(deletedPath, JSON.stringify(deleted, null, 2));
+
+        this.data.images = this.data.images.filter(img => img.id !== imageId);
+        this.data.annotations = this.data.annotations.filter(ann => ann.image_id !== imageId);
+        this.imageIdMap.delete(image.fileName);
+        await fileManager.writeTextFile(this.annotationFile, this.stringify());
+    }
+
+    /**
      * Parse COCO JSON file
      * @param {string} content - JSON content
      * @returns {Object} Parsed data structure

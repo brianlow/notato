@@ -10,6 +10,7 @@ class FileManager {
         this.imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
         this.directoryHandle = null;
         this.fileCache = new Map(); // fileName -> FileHandle
+        this.deletedFolder = '_deleted'; // Deleted files are moved here instead of removed
     }
 
     /**
@@ -191,6 +192,27 @@ class FileManager {
             console.error(`Error creating file ${filePath}:`, error);
             throw error;
         }
+    }
+
+    /**
+     * Move a root-level file into the deleted folder
+     * Copies then removes, since FileSystemHandle.move() isn't widely supported
+     * @param {string} filePath - File path relative to root
+     * @returns {Promise<boolean>} True if the file existed and was moved
+     */
+    async moveToDeleted(filePath) {
+        const fileHandle = await this.getFileHandle(filePath);
+        if (!fileHandle) return false;
+
+        const file = await fileHandle.getFile();
+        const destHandle = await this.getOrCreateFileHandle(`${this.deletedFolder}/${file.name}`);
+        const writable = await destHandle.createWritable();
+        await writable.write(file);
+        await writable.close();
+
+        await this.directoryHandle.removeEntry(filePath);
+        this.fileCache.delete(filePath);
+        return true;
     }
 
     /**

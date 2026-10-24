@@ -40,6 +40,18 @@ class FormatHandler {
     }
 
     /**
+     * Remove an image's annotations from the dataset, keeping a copy in the deleted folder
+     * Called after the image file itself has been moved to fileManager.deletedFolder
+     *
+     * @param {FileManager} fileManager - File system manager
+     * @param {Object} image - Image object {id, fileName, filePath, width, height}
+     * @returns {Promise<void>}
+     */
+    async remove(fileManager, image) {
+        throw new Error('Must implement remove()');
+    }
+
+    /**
      * Get label file path for an image (optional, for per-image formats)
      * @param {string} imagePath - Image file path
      * @returns {string|null} - Label file path or null if format doesn't use per-image files

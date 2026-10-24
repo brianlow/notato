@@ -93,6 +93,27 @@ class AnnotationStore {
     }
 
     /**
+     * Remove an image and its boxes
+     * @param {string} imageId - Image ID
+     */
+    removeImage(imageId) {
+        const image = this.state.images.get(imageId);
+        if (!image) return;
+
+        image.boxes.forEach(boxId => this.state.boxes.delete(boxId));
+        this.state.images.delete(imageId);
+
+        if (this.state.currentImageId === imageId) {
+            this.state.currentImageId = null;
+            this.state.selectedBoxId = null;
+            this.state.currentImageModified = false;
+            this.savedBoxesState = null;
+        }
+
+        this.notify('images', this.state.images);
+    }
+
+    /**
      * Add a box
      * @param {Object} boxData - Box data
      * @returns {string} Box ID
